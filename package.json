@@ -1,7 +1,7 @@
 {
-  "name": "ts-template",
+  "name": "actions-ncu",
   "version": "0.1.0",
-  "description": "TypeScript template project",
+  "description": "GitHub Action for interacting with npm-check-updates.",
   "license": "MIT",
   "author": "taichi",
   "main": "dist/index.js",
