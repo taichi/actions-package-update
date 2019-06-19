@@ -1,0 +1,10 @@
+node_modules
+.DS_Store
+.cache
+.env
+.env.*
+/dist
+**/dist/**
+
+*.log
+*.zip

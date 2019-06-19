@@ -1,0 +1,63 @@
+{
+  "name": "ts-template",
+  "version": "0.1.0",
+  "description": "TypeScript template project",
+  "license": "MIT",
+  "author": "taichi",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "run-s clean lint compile test",
+    "bundle": "parcel build src/index.ts --target=node --global main --bundle-node-modules --no-source-maps",
+    "clean": "rm -r -f dist",
+    "clean:all": "rm -r -f dist .cache",
+    "compile": "tsc --project .",
+    "lint": "tslint --project .",
+    "start": "ts-node src/index.ts",
+    "test": "ava",
+    "watch": "ava -w"
+  },
+  "dependencies": {
+    "convict": "^5.0.0",
+    "dotenv": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/convict": "^4.2.1",
+    "@types/dotenv": "^6.1.1",
+    "@types/node": "^12.0.8",
+    "@types/prettier": "^1.16.4",
+    "@types/source-map-support": "^0.5.0",
+    "ava": "^2.1.0",
+    "cash-cp": "^0.2.0",
+    "cash-rm": "^0.2.0",
+    "cross-env": "^5.2.0",
+    "npm-check-updates": "^3.1.11",
+    "npm-run-all": "^4.1.5",
+    "parcel": "^1.12.3",
+    "prettier": "^1.18.2",
+    "sort-package-json": "^1.22.1",
+    "source-map-support": "^0.5.12",
+    "ts-node": "^8.3.0",
+    "tsconfig-paths": "^3.8.0",
+    "tslint": "^5.17.0",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-microsoft-contrib": "^6.2.0",
+    "tslint-plugin-prettier": "^2.0.1",
+    "typescript": "^3.5.2",
+    "typescript-tslint-plugin": "^0.5.0",
+    "typesync": "^0.5.1"
+  },
+  "ava": {
+    "compileEnhancements": false,
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register",
+      "tsconfig-paths/register"
+    ],
+    "files": [
+      "test/**/*.test.ts"
+    ],
+    "verbose": true
+  }
+}

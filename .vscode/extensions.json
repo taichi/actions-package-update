@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "ms-vscode.vscode-typescript-tslint-plugin",
+    "michelemelluso.gitignore",
+    "EditorConfig.EditorConfig"
+  ]
+}
