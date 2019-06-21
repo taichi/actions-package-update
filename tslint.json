@@ -5,6 +5,7 @@
     "tslint-config-prettier"
   ],
   "rules": {
+    "non-literal-fs-path": false,
     "interface-name": [
       true,
       "never-prefix"

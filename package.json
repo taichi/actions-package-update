@@ -1,10 +1,15 @@
 {
-  "name": "actions-ncu",
+  "name": "actions-package-update",
   "version": "0.1.0",
-  "description": "GitHub Action for interacting with npm-check-updates.",
+  "description": "GitHub Action for package.json update.",
+  "homepage": "https://github.com/taichi/actions-package-update",
   "license": "MIT",
   "author": "taichi",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/taichi/actions-package-update.git"
+  },
   "scripts": {
     "build": "run-s clean lint compile test",
     "bundle": "parcel build src/index.ts --target=node --global main --bundle-node-modules --no-source-maps",
@@ -17,14 +22,28 @@
     "watch": "ava -w"
   },
   "dependencies": {
+    "@octokit/rest": "^16.28.2",
+    "@pnpm/read-modules-dir": "^2.0.1",
     "convict": "^5.0.0",
-    "dotenv": "^8.0.0"
+    "dotenv": "^8.0.0",
+    "execa": "^1.0.0",
+    "git-url-parse": "^11.1.2",
+    "isomorphic-git": "^0.55.4",
+    "moment": "^2.24.0",
+    "pino": "^5.12.6",
+    "pino-pretty": "^3.2.0",
+    "read-package-json": "^2.0.13",
+    "sha.js": "^2.4.11"
   },
   "devDependencies": {
     "@types/convict": "^4.2.1",
     "@types/dotenv": "^6.1.1",
+    "@types/execa": "^0.9.0",
+    "@types/git-url-parse": "^9.0.0",
     "@types/node": "^12.0.8",
+    "@types/pino": "^5.20.0",
     "@types/prettier": "^1.16.4",
+    "@types/sha.js": "^2.4.0",
     "@types/source-map-support": "^0.5.0",
     "ava": "^2.1.0",
     "cash-cp": "^0.2.0",
