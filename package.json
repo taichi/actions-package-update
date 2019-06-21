@@ -3,16 +3,16 @@
   "version": "0.1.0",
   "description": "GitHub Action for package.json update.",
   "homepage": "https://github.com/taichi/actions-package-update",
-  "license": "MIT",
-  "author": "taichi",
-  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/taichi/actions-package-update.git"
   },
+  "license": "MIT",
+  "author": "taichi",
+  "bin": "bin/main.js",
   "scripts": {
     "build": "run-s clean lint compile test",
-    "bundle": "parcel build src/index.ts --target=node --global main --bundle-node-modules --no-source-maps",
+    "bundle": "parcel build src/index.ts --target=node --global main",
     "clean": "rm -r -f dist",
     "clean:all": "rm -r -f dist .cache",
     "compile": "tsc --project .",

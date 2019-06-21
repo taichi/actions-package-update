@@ -1,6 +1,6 @@
-# actions-ncu
+# actions-package-update
 
-GitHub Action for interacting with npm-check-updates.
+GitHub Action for package.json update.
 
 ## setup
 execute below commands on project root dir.
