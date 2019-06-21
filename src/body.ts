@@ -10,7 +10,7 @@ type PackageType =
   | "bundleDependencies"
   | "shadow";
 
-class CompareModel {
+export class CompareModel {
 
   public name: string;
   public current: string;
@@ -147,7 +147,7 @@ function rows(columns: Column[], entries: CompareModel[]) {
   }).join("\n");
 }
 
-function toMarkdown(models: CompareModel[]) {
+export function toMarkdown(models: CompareModel[]) {
   const columns = makeColumns(models);
   return `## Updating Dependencies
 ${headers(columns)}
