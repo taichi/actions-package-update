@@ -10,6 +10,7 @@
       true,
       "never-prefix"
     ],
+    "await-promise": false,
     "function-name": false,
     "no-function-constructor-with-string-args": false,
     "function-constructor": true,

@@ -7,7 +7,7 @@ import moment from "moment";
 import path from "path";
 import hash from "sha.js";
 import packageJson from "../package.json";
-import makePRBody from "./body";
+import { toMarkdown, toTextTable } from "./body";
 import { Config } from "./config";
 import { readFile, readJson } from "./promisify";
 
@@ -51,7 +51,8 @@ export default class Processor {
     }
 
     if (!this.config.get("execute")) {
-      return "git push is skipped. Because EXECUTE=true is not specified.";
+      this.config.logger.info("git push is skipped. Because EXECUTE=true is not specified.");
+      return toTextTable(oldone, newone);
     }
 
     await this.pullRequest(newBranch, oldone, newone, now);
@@ -129,7 +130,7 @@ export default class Processor {
       remote: "origin",
       ref: newBranch
     });
-    const body = await makePRBody(oldone, newone);
+    const body = toMarkdown(oldone, newone);
     const pr = {
       ...this.config.repo(),
       base: this.config.get("git").target,
