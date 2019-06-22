@@ -89,10 +89,16 @@ export default async function configure() {
       format: Boolean,
       arg: "execute"
     },
+    keep: {
+      default: false,
+      doc: "if you specify this option, keep working branch after all.",
+      env: "KEEP",
+      format: Boolean,
+      arg: "keep"
+    },
     log: {
       level: {
         default: "warn",
-        doc: "",
         env: "LOG_LEVEL",
         arg: "log-level"
       }

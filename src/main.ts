@@ -57,6 +57,15 @@ export default class Processor {
 
     await this.pullRequest(newBranch, oldone, newone, now);
 
+    if (!this.config.get("keep")) {
+      this.config.logger.info("Delete working branch because --keep is not specified.");
+      await git.checkout({ ...this.options, ref: this.config.get("git").target });
+      await git.deleteBranch({
+        ...this.options,
+        ref: newBranch
+      });
+    }
+
     return "All done!!";
   }
 
