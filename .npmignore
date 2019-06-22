@@ -1,0 +1,11 @@
+node_modules
+.*
+
+src
+test
+types
+
+Dockerfile
+tsconfig.json
+tslint.json
+yarn.lock
