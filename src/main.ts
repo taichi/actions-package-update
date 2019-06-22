@@ -30,16 +30,19 @@ export default class Processor {
     const { oldone, newone } = await this.upgrade();
 
     const matrix = await this.commit();
-    if (matrix.length < 1) {
-      return "Did not find outdated dependencies.";
-    }
+    await this.git.checkout("-");
+    const baseBranch = await this.git.currentBranch();
 
-    if (!this.config.get("execute")) {
-      this.config.logger.info("git push is skipped. Because EXECUTE=true is not specified.");
-      return toTextTable(oldone, newone);
+    if (0 < matrix.length) {
+      if (this.config.get("execute")) {
+        await this.pullRequest(baseBranch, newBranch, oldone, newone, now);
+      } else {
+        this.config.logger.info("git push is skipped. Because EXECUTE=true is not specified.");
+        this.config.logger.info(`\n${toTextTable(oldone, newone)}`);
+      }
+    } else {
+      this.config.logger.info("Did not find outdated dependencies.");
     }
-
-    await this.pullRequest(newBranch, oldone, newone, now);
 
     if (!this.config.get("keep")) {
       this.config.logger.info("Delete working branch because --keep is not specified.");
@@ -116,12 +119,11 @@ export default class Processor {
   }
 
   protected async pullRequest(
+    baseBranch: string,
     newBranch: string,
     oldone: Map<string, PackageJson>, newone: Map<string, PackageJson>,
     now: string) {
     this.config.logger.info("START pullRequest");
-    await this.git.checkout("-");
-    const baseBranch = await this.git.currentBranch();
 
     await this.git.push("origin", newBranch);
     const body = toMarkdown(oldone, newone);
