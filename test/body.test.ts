@@ -5,11 +5,11 @@ import strip from "strip-ansi";
 
 
 test("toMarkdown", async (t: ExecutionContext) => {
-  const [oldone, newone] = await setup();
+  const [project, oldone, newone] = await setup();
 
-  const md = toMarkdown(oldone, newone);
-  t.is(md, `## Updating Dependencies
-| Name | Updating | shadow |
+  const actual = toMarkdown(project, oldone, newone);
+  t.is(actual, `## Updating Dependencies
+| Name | Updating | dependencies |
 | :----  | :--------: | :-: |
 | [classnames](https://github.com/JedWatson/classnames#readme) | 2.2.0...2.2.6 | * |
 | [react-dom](https://facebook.github.io/react/) | 15.0.0...16.8.6 | * |
@@ -18,7 +18,8 @@ test("toMarkdown", async (t: ExecutionContext) => {
 Powered by [actions-package-update](https://github.com/taichi/actions-package-update)`);
 });
 
-async function setup(): Promise<Map<string, PackageJson>[]> {
+async function setup(): Promise<[PackageJson,
+  Map<string, PackageJson>, Map<string, PackageJson>]> {
   const names = ["classnames", "react-dom", "react"];
   const toPkgMap = async (s: string) => {
     const m = new Map;
@@ -33,25 +34,22 @@ async function setup(): Promise<Map<string, PackageJson>[]> {
 
   const oldone = await toPkgMap("old");
   const newone = await toPkgMap("new");
-  return [oldone, newone];
+
+  const project = await readJson("test/fixture/body/package.json");
+  return [project, oldone, newone];
 }
 
 test("toTextTable", async (t: ExecutionContext) => {
-  const [oldone, newone] = await setup();
+  const [project, oldone, newone] = await setup();
 
-  const actual = toTextTable(oldone, newone).split(/[\r]?\n/);
-
-  const expected = `========================================
-| Name       |    Updating     | shadow |
----------------------------------------
-| classnames |  2.2.0...2.2.6  |   *    |
----------------------------------------
-| react-dom  | 15.0.0...16.8.6 |   *    |
----------------------------------------
-| react      | 15.0.0...16.8.6 |   *    |
-========================================`.split(/[\r]?\n/);
-
-  actual.forEach((line: string, i: number) => {
-    t.is(strip(line), expected[i]);
-  });
+  const actual = toTextTable(project, oldone, newone);
+  t.is(strip(actual), `==============================================
+| Name       |    Updating     | dependencies |
+---------------------------------------------
+| classnames |  2.2.0...2.2.6  |      *       |
+---------------------------------------------
+| react-dom  | 15.0.0...16.8.6 |      *       |
+---------------------------------------------
+| react      | 15.0.0...16.8.6 |      *       |
+==============================================`);
 });

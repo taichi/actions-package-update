@@ -32,13 +32,14 @@ export default class Processor {
     const matrix = await this.commit();
     await this.git.checkout("-");
     const baseBranch = await this.git.currentBranch();
+    const project = await readJson(path.join(this.config.get("workspace"), "package.json"));
 
     if (0 < matrix.length) {
       if (this.config.get("execute")) {
-        await this.pullRequest(baseBranch, newBranch, oldone, newone, now);
+        await this.pullRequest(baseBranch, newBranch, project, oldone, newone, now);
       } else {
         this.config.logger.info("git push is skipped. Because EXECUTE=true is not specified.");
-        this.config.logger.info(`\n${toTextTable(oldone, newone)}`);
+        this.config.logger.info(`\n${toTextTable(project, oldone, newone)}`);
       }
     } else {
       this.config.logger.info("Did not find outdated dependencies.");
@@ -121,12 +122,13 @@ export default class Processor {
   protected async pullRequest(
     baseBranch: string,
     newBranch: string,
+    project: PackageJson,
     oldone: Map<string, PackageJson>, newone: Map<string, PackageJson>,
     now: string) {
     this.config.logger.info("START pullRequest");
 
     await this.git.push("origin", newBranch);
-    const body = toMarkdown(oldone, newone);
+    const body = toMarkdown(project, oldone, newone);
     const url = await this.git.remoteurl("origin");
     const origin = giturl(url);
     const github = await this.newGitHub(this.config, origin);

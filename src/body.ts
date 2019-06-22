@@ -21,11 +21,11 @@ export class CompareModel {
   public homepage?: string;
   public tags: Set<string>;
 
-  constructor(o: PackageJson, n: PackageJson) {
+  constructor(project: PackageJson, o: PackageJson, n: PackageJson) {
     this.name = o.name;
     this.current = o.version;
     this.wanted = n.version;
-    this.packageType = this.toPackageType(this.name, o);
+    this.packageType = this.toPackageType(this.name, project);
     this.repo = this.toURL(o.repository);
     this.homepage = o.homepage;
     this.tags = new Set();
@@ -158,8 +158,8 @@ function rows(columns: Column[], entries: CompareModel[]) {
   }).join("\n");
 }
 
-export function toTextTable(oldone: Map<string, PackageJson>, newone: Map<string, PackageJson>) {
-  const models = toCompareModels(oldone, newone);
+export function toTextTable(project: PackageJson, oldone: Map<string, PackageJson>, newone: Map<string, PackageJson>) {
+  const models = toCompareModels(project, oldone, newone);
   const columns = makeColumns(models);
   const table = <HorizontalTable>new Table({
     head: columns.map((col: Column) => col.name),
@@ -183,8 +183,8 @@ export function toTextTable(oldone: Map<string, PackageJson>, newone: Map<string
   return table.toString();
 }
 
-export function toMarkdown(oldone: Map<string, PackageJson>, newone: Map<string, PackageJson>) {
-  const models = toCompareModels(oldone, newone);
+export function toMarkdown(project: PackageJson, oldone: Map<string, PackageJson>, newone: Map<string, PackageJson>) {
+  const models = toCompareModels(project, oldone, newone);
   const columns = makeColumns(models);
   return `## Updating Dependencies
 ${headers(columns)}
@@ -195,7 +195,7 @@ Powered by [${packageJson.name}](${packageJson.homepage})`;
 }
 
 
-function toCompareModels(oldone: Map<string, PackageJson>, newone: Map<string, PackageJson>) {
+function toCompareModels(project: PackageJson, oldone: Map<string, PackageJson>, newone: Map<string, PackageJson>) {
   return Array.from(oldone.entries())
     .filter(([name, o]: [string, PackageJson]) => {
       const n = newone.get(name);
@@ -203,7 +203,7 @@ function toCompareModels(oldone: Map<string, PackageJson>, newone: Map<string, P
     })
     .map(([name, o]: [string, PackageJson]) => {
       const n = <PackageJson>newone.get(name);
-      return new CompareModel(o, n);
+      return new CompareModel(project, o, n);
     });
 }
 
