@@ -8,7 +8,8 @@ import pino from "pino";
 export type ResolvedType<T> = T extends Promise<infer U> ? U : T;
 export type Config = ResolvedType<ReturnType<typeof configure>>;
 
-async function getOrigin(dir: string) {
+async function getOrigin() {
+  const dir = process.env.GITHUB_WORKSPACE ? process.env.GITHUB_WORKSPACE : "./";
   const remotes = await git.listRemotes({
     fs: fs,
     dir
@@ -20,11 +21,12 @@ async function getOrigin(dir: string) {
   return giturl(origin.url);
 }
 
+const defaultPrefix = "package-update/";
+const defaultMessage = "update dependencies";
+
+// tslint:disable-next-line: max-func-body-length
 export default async function configure() {
-  const dir = process.env.GITHUB_WORKSPACE ? process.env.GITHUB_WORKSPACE : "./";
-  const repoURL = await getOrigin(dir);
-  const defaultPrefix = "package-update/";
-  const defaultMessage = "update dependencies";
+  const repoURL = await getOrigin();
   const rawConfig = convict({
     workspace: {
       default: "./",
@@ -32,6 +34,12 @@ export default async function configure() {
     },
     token: {
       default: "",
+      doc: "GitHub Access Token.",
+      format: (value: string) => {
+        if (!value) {
+          throw new Error("must be set a GitHub Access Token.");
+        }
+      },
       env: "GITHUB_TOKEN",
       arg: "token",
       sensitive: true
@@ -41,7 +49,11 @@ export default async function configure() {
         default: "",
         doc: "specify the commit auther name.",
         env: "AUTHOR_NAME",
-        format: String,
+        format: (value: string) => {
+          if (!value) {
+            throw new Error("must be set the commit auther name.");
+          }
+        },
         arg: "username"
       },
       useremail: {
