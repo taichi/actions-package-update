@@ -12,7 +12,7 @@
   "bin": "bin/main.js",
   "scripts": {
     "build": "run-s clean lint compile test",
-    "bundle": "parcel build src/index.ts --target=node --global main",
+    "bundle": "parcel build src/index.ts --target=node --global main --no-source-maps",
     "clean": "rm -r -f dist",
     "clean:all": "rm -r -f dist .cache",
     "compile": "tsc --project .",
