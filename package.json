@@ -1,6 +1,6 @@
 {
   "name": "actions-package-update",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "GitHub Action for package.json update.",
   "homepage": "https://github.com/taichi/actions-package-update",
   "repository": {
@@ -40,7 +40,7 @@
     "@types/dotenv": "^6.1.1",
     "@types/execa": "^0.9.0",
     "@types/git-url-parse": "^9.0.0",
-    "@types/node": "^12.0.8",
+    "@types/node": "^12.0.10",
     "@types/pino": "^5.20.0",
     "@types/prettier": "^1.16.4",
     "@types/sha.js": "^2.4.0",
@@ -58,12 +58,12 @@
     "strip-ansi": "^5.2.0",
     "ts-node": "^8.3.0",
     "tsconfig-paths": "^3.8.0",
-    "tslint": "^5.17.0",
+    "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",
     "tslint-microsoft-contrib": "^6.2.0",
     "tslint-plugin-prettier": "^2.0.1",
     "typescript": "^3.5.2",
-    "typescript-tslint-plugin": "^0.5.0",
+    "typescript-tslint-plugin": "^0.5.2",
     "typesync": "^0.5.1"
   },
   "ava": {
