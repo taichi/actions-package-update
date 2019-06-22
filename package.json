@@ -11,7 +11,7 @@
   "author": "taichi",
   "bin": "bin/main.js",
   "scripts": {
-    "build": "run-s clean lint compile test",
+    "build": "run-s clean lint test bundle",
     "bundle": "parcel build src/index.ts --target=node --global main --no-source-maps",
     "clean": "rm -r -f dist",
     "clean:all": "rm -r -f dist .cache",
@@ -29,7 +29,6 @@
     "dotenv": "^8.0.0",
     "execa": "^1.0.0",
     "git-url-parse": "^11.1.2",
-    "isomorphic-git": "^0.55.4",
     "moment": "^2.24.0",
     "pino": "^5.12.6",
     "pino-pretty": "^3.2.0",

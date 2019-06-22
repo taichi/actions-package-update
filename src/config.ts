@@ -1,134 +1,98 @@
 import convict from "convict";
-import * as fs from "fs";
-import giturl from "git-url-parse";
-import * as git from "isomorphic-git";
 import pino from "pino";
-
-
-export type ResolvedType<T> = T extends Promise<infer U> ? U : T;
-export type Config = ResolvedType<ReturnType<typeof configure>>;
-
-async function getOrigin() {
-  const dir = process.env.GITHUB_WORKSPACE ? process.env.GITHUB_WORKSPACE : "./";
-  const remotes = await git.listRemotes({
-    fs: fs,
-    dir
-  });
-  const origin = remotes.find((v: git.RemoteDefinition) => v.remote === "origin");
-  if (!origin) {
-    throw new Error("git remote origin doesn't found");
-  }
-  return giturl(origin.url);
-}
 
 const defaultPrefix = "package-update/";
 const defaultMessage = "update dependencies";
 
-// tslint:disable-next-line: max-func-body-length
-export default async function configure() {
-  const repoURL = await getOrigin();
-  const rawConfig = convict({
-    workspace: {
-      default: "./",
-      env: "GITHUB_WORKSPACE"
+const rawConfig = convict({
+  workspace: {
+    default: "./",
+    env: "GITHUB_WORKSPACE"
+  },
+  token: {
+    default: "",
+    doc: "GitHub Access Token.",
+    format: (value: string) => {
+      if (!value) {
+        throw new Error("must be set a GitHub Access Token.");
+      }
     },
-    token: {
+    env: "GITHUB_TOKEN",
+    arg: "token",
+    sensitive: true
+  },
+  git: {
+    username: {
       default: "",
-      doc: "GitHub Access Token.",
+      doc: "specify the commit auther name.",
+      env: "AUTHOR_NAME",
       format: (value: string) => {
         if (!value) {
-          throw new Error("must be set a GitHub Access Token.");
+          throw new Error("must be set the commit auther name.");
         }
       },
-      env: "GITHUB_TOKEN",
-      arg: "token",
-      sensitive: true
+      arg: "username"
     },
-    git: {
-      username: {
-        default: "",
-        doc: "specify the commit auther name.",
-        env: "AUTHOR_NAME",
-        format: (value: string) => {
-          if (!value) {
-            throw new Error("must be set the commit auther name.");
-          }
-        },
-        arg: "username"
-      },
-      useremail: {
-        default: "",
-        doc: "specify the commit auther email.",
-        env: "AUTHOR_EMAIL",
-        format: "email",
-        arg: "useremail"
-      },
-      repository: {
-        default: repoURL,
-        format: "*"
-      },
-      prefix: {
-        default: defaultPrefix,
-        doc: `specify working branch prefix. default prefix is ${defaultPrefix}`,
-        env: "BRANCH_PREFIX",
-        arg: "prefix"
-      },
-      message: {
-        default: "update dependencies",
-        doc: `specify the commit message. default message is ${defaultMessage}`,
-        env: "COMMIT_MESSAGE"
-      },
-      target: {
-        default: "refs/heads/master",
-        doc: "Pull Requst target Branch",
-        env: "BASE_BRANCH"
-      }
+    useremail: {
+      default: "",
+      doc: "specify the commit auther email.",
+      env: "AUTHOR_EMAIL",
+      format: "email",
+      arg: "useremail"
     },
-    update: {
-      default: "npm-check-updates",
-      env: "UPDATE_COMMAND"
+    prefix: {
+      default: defaultPrefix,
+      doc: `specify working branch prefix. default prefix is ${defaultPrefix}`,
+      env: "BRANCH_PREFIX",
+      arg: "prefix"
     },
-    shadows: {
-      default: false,
-      doc: "if you specify this option, shows shadow dependencies changes.",
-      env: "WITH_SHADOWS",
-      arg: "with-shadows"
-    },
-    execute: {
-      default: false,
-      doc: "if you don't specify this option, allows you to test this application.",
-      env: "EXECUTE",
-      format: Boolean,
-      arg: "execute"
-    },
-    keep: {
-      default: false,
-      doc: "if you specify this option, keep working branch after all.",
-      env: "KEEP",
-      format: Boolean,
-      arg: "keep"
-    },
-    log: {
-      level: {
-        default: "warn",
-        env: "LOG_LEVEL",
-        arg: "log-level"
-      }
+    message: {
+      default: "update dependencies",
+      doc: `specify the commit message. default message is ${defaultMessage}`,
+      env: "COMMIT_MESSAGE"
     }
-  });
-
-  return {
-    ...rawConfig,
-    logger: pino({
-      level: rawConfig.get("log").level,
-      prettyPrint: true
-    }),
-    repo: () => {
-      const url = rawConfig.get("git").repository;
-      const owner = url.owner;
-      const repo = url.name;
-      return { owner, repo };
+  },
+  update: {
+    default: "npm-check-updates",
+    env: "UPDATE_COMMAND"
+  },
+  shadows: {
+    default: false,
+    doc: "if you specify this option, shows shadow dependencies changes.",
+    env: "WITH_SHADOWS",
+    arg: "with-shadows"
+  },
+  execute: {
+    default: false,
+    doc: "if you don't specify this option, allows you to test this application.",
+    env: "EXECUTE",
+    format: Boolean,
+    arg: "execute"
+  },
+  keep: {
+    default: false,
+    doc: "if you specify this option, keep working branch after all.",
+    env: "KEEP",
+    format: Boolean,
+    arg: "keep"
+  },
+  log: {
+    level: {
+      default: "warn",
+      env: "LOG_LEVEL",
+      arg: "log-level"
     }
-  };
-}
+  }
+});
 
+const config = {
+  ...rawConfig,
+  logger: pino({
+    level: rawConfig.get("log").level,
+    prettyPrint: true
+  })
+};
+
+export type Config = typeof config;
+
+export default config;

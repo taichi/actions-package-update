@@ -1,38 +1,22 @@
 import Octokit from "@octokit/rest";
 import rmd from "@pnpm/read-modules-dir";
 import execa, { Options as ExecaOptions } from "execa";
-import * as fs from "fs";
-import * as git from "isomorphic-git";
+import giturl from "git-url-parse";
 import moment from "moment";
 import path from "path";
 import hash from "sha.js";
 import packageJson from "../package.json";
 import { toMarkdown, toTextTable } from "./body";
 import { Config } from "./config";
+import Git from "./git";
 import { readFile, readJson } from "./promisify";
-
-
-function newGitHub(config: Config) {
-  const repo = config.get("git").repository;
-  const ghopt: Octokit.Options = {
-    auth: `token ${config.get("token")}`,
-    userAgent: `${packageJson.name}/${packageJson.version}`
-  };
-  if (repo.resource !== "github.com") {
-    // for GHE
-    ghopt.baseUrl = `https://${repo.resource}/api/v3`;
-  }
-  return new Octokit(ghopt);
-}
 
 export default class Processor {
   private readonly config: Config;
-  private readonly github: Octokit;
-  private readonly options: { fs: typeof fs, dir: string };
+  private readonly git: Git;
   constructor(config: Config) {
     this.config = config;
-    this.github = newGitHub(config);
-    this.options = { fs, dir: this.config.get("workspace") };
+    this.git = new Git(config);
   }
 
   public async run(): Promise<string> {
@@ -40,7 +24,7 @@ export default class Processor {
 
     const { found, newBranch } = await this.makeBranch(now);
     if (found) {
-      return `Found existing branch ${found.name} ${found.commit}`;
+      return `Found existing branch ${found}`;
     }
 
     const { oldone, newone } = await this.upgrade();
@@ -59,11 +43,7 @@ export default class Processor {
 
     if (!this.config.get("keep")) {
       this.config.logger.info("Delete working branch because --keep is not specified.");
-      await git.checkout({ ...this.options, ref: this.config.get("git").target });
-      await git.deleteBranch({
-        ...this.options,
-        ref: newBranch
-      });
+      await this.git.deleteBranch(newBranch);
     }
 
     return "All done!!";
@@ -72,14 +52,21 @@ export default class Processor {
   protected async makeBranch(now: string) {
     this.config.logger.info("START makeBranch");
     const json = await this.getFile("package.json");
+    if (!json) {
+      throw new Error("package.json not found");
+    }
+
     const hex = new hash.sha1().update(json, "utf8").digest("hex");
     const newBranch = `${this.config.get("git").prefix}${now}/${hex}`;
+
+    await this.git.fetch("origin");
     this.config.logger.info("listBranches");
-    const branches = await this.github.repos.listBranches(this.config.repo());
-    const found = branches.data.find((v: Octokit.ReposListBranchesResponseItem) => v.name.endsWith(hex));
+    const branches = await this.git.listBranches();
+    this.config.logger.debug("%o", branches);
+    const found = branches.find((name: string) => name.endsWith(hex));
     this.config.logger.info("found branch is %s", found);
     if (!found) {
-      await git.branch({ ...this.options, ref: newBranch, checkout: true });
+      await this.git.checkoutWith(newBranch);
     }
     this.config.logger.info("END   makeBranch");
     return { found, newBranch };
@@ -89,7 +76,7 @@ export default class Processor {
     this.config.logger.info("START upgrade");
     await this.install();
     const oldone = await this.collectPackage();
-    const arg = process.argv.slice(1);
+    const arg = process.argv.slice(2);
     const cmd = this.config.get("update");
     const ncu = await this.runInWorkspace(cmd, arg);
     if (ncu.failed) {
@@ -104,28 +91,28 @@ export default class Processor {
 
   protected async commit() {
     this.config.logger.info("START commit");
-    const matrix = await git.statusMatrix(this.options);
+    const matrix = await this.git.status();
     if (0 < matrix.length) {
       this.config.logger.info("files are changed");
       this.config.logger.debug("changed files are %o", matrix);
-      await Promise.all(matrix.map(async (m: [string, number, number, number]) => {
-        const ad = { ...this.options, filepath: m[0] };
-        this.config.logger.debug(ad);
-        return git.add(ad);
-      }));
-      const cmt = {
-        ...this.options,
-        message: this.config.get("git").message,
-        author: {
-          name: this.config.get("git").username,
-          email: this.config.get("git").useremail
-        }
-      };
-      this.config.logger.debug(cmt);
-      await git.commit(cmt);
+      await this.git.addAll();
+      await this.git.setup(this.config.get("git").username, this.config.get("git").useremail);
+      await this.git.commit(this.config.get("git").message);
     }
     this.config.logger.info("END   commit");
     return matrix;
+  }
+
+  protected async newGitHub(config: Config, repo: giturl.GitUrl) {
+    const ghopt: Octokit.Options = {
+      auth: `token ${config.get("token")}`,
+      userAgent: `${packageJson.name}/${packageJson.version}`
+    };
+    if (repo.resource !== "github.com") {
+      // for GHE
+      ghopt.baseUrl = `https://${repo.resource}/api/v3`;
+    }
+    return new Octokit(ghopt);
   }
 
   protected async pullRequest(
@@ -133,52 +120,60 @@ export default class Processor {
     oldone: Map<string, PackageJson>, newone: Map<string, PackageJson>,
     now: string) {
     this.config.logger.info("START pullRequest");
-    await git.push({
-      ...this.options,
-      token: this.config.get("token"),
-      remote: "origin",
-      ref: newBranch
-    });
+    await this.git.checkout("-");
+    const baseBranch = await this.git.currentBranch();
+
+    await this.git.push("origin", newBranch);
     const body = toMarkdown(oldone, newone);
-    const pr = {
-      ...this.config.repo(),
-      base: this.config.get("git").target,
+    const url = await this.git.remoteurl("origin");
+    const origin = giturl(url);
+    const github = await this.newGitHub(this.config, origin);
+    const pr: Octokit.PullsCreateParams = {
+      owner: origin.owner,
+      repo: origin.name,
+      base: baseBranch,
       head: newBranch,
       title: `update dependencies at ${now}`,
       body
     };
     this.config.logger.info("Pull Request create");
     this.config.logger.debug(pr);
-    await this.github.pulls.create(pr);
+    await github.pulls.create(pr);
     this.config.logger.info("END   pullRequest");
   }
 
   protected async install() {
     this.config.logger.info("START install");
-    const pl = this.getFile("package-lock.json");
-    if (pl) {
-      this.config.logger.info("use npm");
-      await this.runInWorkspace("npm", "install");
-    }
-
-    const yl = this.getFile("yarn.lock");
+    const yl = await this.getFile("yarn.lock");
     if (yl) {
       this.config.logger.info("use yarn");
       await this.runInWorkspace("yarn", "install");
+      return;
     }
+
+    this.config.logger.info("use npm");
+    await this.runInWorkspace("npm", "install");
+
     this.config.logger.info("END   install");
   }
 
   protected async getFile(name: string, encoding: string = "utf8") {
     const n = path.join(this.config.get("workspace"), name);
     this.config.logger.info("getFile %s", n);
-    return readFile(n, { encoding });
+    return readFile(n, { encoding }).catch(() => undefined);
   }
 
   protected async runInWorkspace(command: string, args?: string[] | string, opts?: ExecaOptions) {
     const a = typeof args === "string" ? [args] : args;
-    this.config.logger.info("runInWorkspace %o", a);
-    return execa(command, a, { cwd: this.config.get("workspace"), ...opts });
+    this.config.logger.info("runInWorkspace %s %o", command, a);
+    const kids = execa(command, a, { cwd: this.config.get("workspace"), ...opts });
+    if (kids.stdout) {
+      kids.stdout.pipe(process.stdout);
+    }
+    if (kids.stderr) {
+      kids.stderr.pipe(process.stderr);
+    }
+    return kids;
   }
 
   protected async collectPackage(): Promise<Map<string, PackageJson>> {
@@ -200,7 +195,7 @@ export default class Processor {
     const dirs = await rmd(modules);
     this.config.logger.debug("module directories are %o", dirs);
     if (dirs) {
-      const pkgs = await Promise.all(dirs.map((dir: string) => readJson(`${dir}/package.json`)));
+      const pkgs = await Promise.all(dirs.map((dir: string) => readJson(`${modules}/${dir}/package.json`)));
       this.config.logger.debug("packages %o", pkgs);
       const nvs = pkgs.map<[string, PackageJson]>((p: PackageJson) => [p.name, p]).filter(filter);
       this.config.logger.info("END   collectPackage");
