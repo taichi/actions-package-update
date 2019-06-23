@@ -32,12 +32,11 @@ export default class Processor {
 
     const matrix = await this.commit();
     await this.git.checkout("-");
-    const baseBranch = await this.git.currentBranch();
     const project = await readJson(path.join(this.config.get("workspace"), "package.json"));
 
     if (0 < matrix.length) {
       if (this.config.get("execute")) {
-        await this.pullRequest(baseBranch, newBranch, project, oldone, newone, now);
+        await this.pullRequest(newBranch, project, oldone, newone, now);
       } else {
         this.config.logger.info("git push is skipped. Because EXECUTE environment variable is not true");
         this.config.logger.info(`\n${toTextTable(project, oldone, newone)}`);
@@ -121,7 +120,6 @@ export default class Processor {
   }
 
   protected async pullRequest(
-    baseBranch: string,
     newBranch: string,
     project: PackageJson,
     oldone: Map<string, PackageJson>, newone: Map<string, PackageJson>,
@@ -133,10 +131,14 @@ export default class Processor {
     const url = await this.git.remoteurl("origin");
     const origin = giturl(url);
     const github = await this.newGitHub(this.config, origin);
+    const repo = await github.repos.get({
+      owner: origin.owner,
+      repo: origin.name
+    });
     const pr: Octokit.PullsCreateParams = {
       owner: origin.owner,
       repo: origin.name,
-      base: baseBranch,
+      base: repo.data.default_branch,
       head: newBranch,
       title: `update dependencies at ${now}`,
       body
