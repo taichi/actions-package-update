@@ -1,6 +1,6 @@
 {
   "name": "actions-package-update",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "GitHub Action for package.json update.",
   "homepage": "https://github.com/taichi/actions-package-update",
   "repository": {
