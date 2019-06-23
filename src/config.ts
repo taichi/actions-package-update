@@ -18,7 +18,6 @@ const rawConfig = convict({
       }
     },
     env: "GITHUB_TOKEN",
-    arg: "token",
     sensitive: true
   },
   git: {
@@ -38,13 +37,11 @@ const rawConfig = convict({
       doc: "specify the commit auther email.",
       env: "AUTHOR_EMAIL",
       format: "email",
-      arg: "useremail"
     },
     prefix: {
       default: defaultPrefix,
       doc: `specify working branch prefix. default prefix is ${defaultPrefix}`,
-      env: "BRANCH_PREFIX",
-      arg: "prefix"
+      env: "BRANCH_PREFIX"
     },
     message: {
       default: "update dependencies",
@@ -53,34 +50,31 @@ const rawConfig = convict({
     }
   },
   update: {
-    default: "npm-check-updates",
+    default: "ncu",
+    doc: "specify the command for update. default command is ncu.",
     env: "UPDATE_COMMAND"
   },
   shadows: {
     default: false,
     doc: "if you specify this option, shows shadow dependencies changes.",
-    env: "WITH_SHADOWS",
-    arg: "with-shadows"
+    env: "WITH_SHADOWS"
   },
   execute: {
     default: false,
     doc: "if you don't specify this option, allows you to test this application.",
     env: "EXECUTE",
-    format: Boolean,
-    arg: "execute"
+    format: Boolean
   },
   keep: {
     default: false,
     doc: "if you specify this option, keep working branch after all.",
     env: "KEEP",
-    format: Boolean,
-    arg: "keep"
+    format: Boolean
   },
   log: {
     level: {
-      default: "warn",
-      env: "LOG_LEVEL",
-      arg: "log-level"
+      default: "info",
+      env: "LOG_LEVEL"
     }
   }
 });
