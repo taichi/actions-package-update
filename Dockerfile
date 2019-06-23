@@ -14,4 +14,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends -y git openssh-
 RUN yarn global add npm-check-updates
 RUN yarn global add actions-package-update
 
-ENTRYPOINT [ "sh", "-c", "actions-package-update" ]
+ENTRYPOINT [ "actions-package-update" ]
