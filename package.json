@@ -2,6 +2,15 @@
   "name": "actions-package-update",
   "version": "0.5.0",
   "description": "GitHub Action for package.json update.",
+  "keywords": [
+    "github-actions",
+    "npm",
+    "pr",
+    "pull-request",
+    "update",
+    "yarn",
+    "yarnpkg"
+  ],
   "homepage": "https://github.com/taichi/actions-package-update",
   "repository": {
     "type": "git",
@@ -17,7 +26,6 @@
     "clean:all": "rm -r -f dist .cache",
     "compile": "tsc --project .",
     "lint": "tslint --project .",
-    "start": "ts-node src/index.ts",
     "prepublish": "run-s clean:all lint test bundle",
     "test": "ava",
     "watch": "ava -w"
@@ -67,6 +75,10 @@
     "typescript-tslint-plugin": "^0.5.2",
     "typesync": "^0.5.1"
   },
+  "engines": {
+    "node": ">=10"
+  },
+  "preferGlobal": true,
   "ava": {
     "compileEnhancements": false,
     "extensions": [
