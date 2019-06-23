@@ -10,7 +10,7 @@ LABEL "com.github.actions.description"="Upgrades your package.json dependencies 
 LABEL "com.github.actions.icon"="corner-right-up"
 LABEL "com.github.actions.color"="gray-dark"
 
-RUN apt-get update && apt-get install -y --no-install-recommends -y git openssh-client
+RUN apt-get update && apt-get install -y --no-install-recommends -y git
 RUN yarn global add npm-check-updates
 RUN yarn global add actions-package-update
 
