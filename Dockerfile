@@ -1,6 +1,6 @@
 FROM node:slim
 
-LABEL version="0.5.0"
+LABEL version="0.6.0"
 LABEL repository="https://github.com/taichi/actions-package-update"
 LABEL homepage="https://github.com/taichi/actions-package-update"
 LABEL maintainer="Sato Taichi <ryushi+actions@gmail.com>"

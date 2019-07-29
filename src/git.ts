@@ -1,5 +1,5 @@
 
-import execa, { Options as ExecaOptions } from "execa";
+import execa from "execa";
 import { Config } from "./config";
 
 export default class Git {
@@ -12,7 +12,7 @@ export default class Git {
     const msg = `git ${subcmd.join(" ")}`;
     this.conf.logger.debug(`BEGIN ${msg}`);
     return execa("git", subcmd, { cwd: this.conf.get("workspace") })
-      .then((value: execa.ExecaReturns) => {
+      .then((value: execa.ExecaReturnValue) => {
         this.conf.logger.debug(`END   ${msg}`);
         if (value.failed) {
           throw new Error(`${msg} failed`);
