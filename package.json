@@ -1,6 +1,6 @@
 {
   "name": "actions-package-update",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "GitHub Action for package.json update.",
   "keywords": [
     "github-actions",
@@ -31,15 +31,15 @@
     "watch": "ava -w"
   },
   "dependencies": {
-    "@octokit/rest": "^16.28.2",
+    "@octokit/rest": "^16.28.7",
     "@pnpm/read-modules-dir": "^2.0.1",
     "cli-table3": "^0.5.1",
-    "convict": "^5.0.0",
+    "convict": "^5.1.0",
     "dotenv": "^8.0.0",
-    "execa": "^1.0.0",
+    "execa": "^2.0.3",
     "git-url-parse": "^11.1.2",
     "moment": "^2.24.0",
-    "pino": "^5.12.6",
+    "pino": "^5.13.1",
     "pino-pretty": "^3.2.0",
     "read-package-json": "^2.0.13",
     "sha.js": "^2.4.11"
@@ -47,18 +47,17 @@
   "devDependencies": {
     "@types/convict": "^4.2.1",
     "@types/dotenv": "^6.1.1",
-    "@types/execa": "^0.9.0",
     "@types/git-url-parse": "^9.0.0",
-    "@types/node": "^12.0.10",
+    "@types/node": "^12.6.8",
     "@types/pino": "^5.20.0",
-    "@types/prettier": "^1.16.4",
+    "@types/prettier": "^1.18.0",
     "@types/sha.js": "^2.4.0",
     "@types/source-map-support": "^0.5.0",
-    "ava": "^2.1.0",
+    "ava": "^2.2.0",
     "cash-cp": "^0.2.0",
     "cash-rm": "^0.2.0",
     "cross-env": "^5.2.0",
-    "npm-check-updates": "^3.1.11",
+    "npm-check-updates": "^3.1.20",
     "npm-run-all": "^4.1.5",
     "parcel": "^1.12.3",
     "prettier": "^1.18.2",
@@ -71,9 +70,9 @@
     "tslint-config-prettier": "^1.18.0",
     "tslint-microsoft-contrib": "^6.2.0",
     "tslint-plugin-prettier": "^2.0.1",
-    "typescript": "^3.5.2",
-    "typescript-tslint-plugin": "^0.5.2",
-    "typesync": "^0.5.1"
+    "typescript": "^3.5.3",
+    "typescript-tslint-plugin": "^0.5.4",
+    "typesync": "^0.5.2"
   },
   "engines": {
     "node": ">=10"
