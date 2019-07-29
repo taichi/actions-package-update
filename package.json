@@ -74,6 +74,9 @@
     "typescript-tslint-plugin": "^0.5.4",
     "typesync": "^0.5.2"
   },
+  "resolutions": {
+    "lodash.merge": "^4.6.2"
+  },
   "engines": {
     "node": ">=10"
   },
