@@ -1,0 +1,20 @@
+on: push
+name: Build
+jobs:
+  install:
+    name: Install
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Install
+      uses: Borales/actions-yarn@master
+      with:
+        args: install
+    - name: Lint
+      uses: Borales/actions-yarn@master
+      with:
+        args: lint
+    - name: Test
+      uses: Borales/actions-yarn@master
+      with:
+        args: test
