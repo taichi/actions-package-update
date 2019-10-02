@@ -14,21 +14,27 @@ GitHub Action for package.json update.
 below is the complete workflow example.
 
 ```
-workflow "Update" {
-  on = "schedule(0 0 * * 3)"
-  resolves = ["package-update"]
-}
-
-action "package-update" {
-  uses = "taichi/actions-package-update@master"
-  args = "-u --packageFile package.json"
-  env  = {
-    AUTHOR_NAME = "John"
-    AUTHOR_EMAIL = "john@example.com"
-    EXECUTE = "true"
-  }
-  secrets = ["GITHUB_TOKEN"]
-}
+on:
+  schedule:
+  - cron: 0 0 * * 3
+name: Update
+jobs:
+  package-update:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: set remote url
+      run: git remote set-url --push origin https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+    - name: package-update
+      uses: taichi/actions-package-update@master
+      env:
+        AUTHOR_EMAIL: john@example.com
+        AUTHOR_NAME: john
+        EXECUTE: "true"
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        LOG_LEVEL: debug
+      with:
+        args: -u --packageFile package.json --loglevel verbose
 ```
 
 * this workflow works every wednesday at 0:00
@@ -43,48 +49,45 @@ action "package-update" {
 * Update devDependencies only
 
 ```
-action "package-update" {
-  uses = "taichi/actions-package-update@master"
-  args = "-u --packageFile package.json --dep dev"
-  env  = {
-    AUTHOR_NAME = "John"
-    AUTHOR_EMAIL = "john@example.com"
-    EXECUTE = "true"
-  }
-  secrets = ["GITHUB_TOKEN"]
-}
+- name: package-update
+  uses: taichi/actions-package-update@master
+  env:
+    AUTHOR_EMAIL: john@example.com
+    AUTHOR_NAME: John
+    EXECUTE: "true"
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  with:
+    args: -u --packageFile package.json  --dep dev
 ```
 
 * Use yarn upgrade
 
 ```
-action "package-update" {
-  uses = "taichi/actions-package-update@master"
-  args = "upgrade --latest"
-  env  = {
-    AUTHOR_NAME = "John"
-    AUTHOR_EMAIL = "john@example.com"
-    EXECUTE = "true"
-    UPDATE_COMMAND="yarn"
-  }
-  secrets = ["GITHUB_TOKEN"]
-}
+- name: package-update
+  uses: taichi/actions-package-update@master
+  env:
+    AUTHOR_EMAIL: john@example.com
+    AUTHOR_NAME: John
+    EXECUTE: "true"
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    UPDATE_COMMAND: yarn
+  with:
+    args: upgrade --latest
 ```
 
 * Use npm update
 
 ```
-action "package-update" {
-  uses = "taichi/actions-package-update@master"
-  args = "update"
-  env  = {
-    AUTHOR_NAME = "John"
-    AUTHOR_EMAIL = "john@example.com"
-    EXECUTE = "true"
-    UPDATE_COMMAND="npm"
-  }
-  secrets = ["GITHUB_TOKEN"]
-}
+- name: package-update
+  uses: taichi/actions-package-update@master
+  env:
+    AUTHOR_EMAIL: john@example.com
+    AUTHOR_NAME: John
+    EXECUTE: "true"
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    UPDATE_COMMAND: npm
+  with:
+    args: update
 ```
 
 ## Local or CI Server|Service
