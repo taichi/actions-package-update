@@ -139,10 +139,9 @@ this command works locally and output result to standard output.
   * One of `fatal`, `error`, `warn`, `info`, `debug`, `trace` or `silent`.
   * default value is `info`.
   * if you want to know this tool's internal states, set to `debug`.
-* `GITHUB_WORKSPACE`
+* `WORKING_DIR`
   * specify the working dir.
   * default value is `./`.
-  * if you use this tool as GitHub Actions, setting valid value automatically.
 
 # for developers
 ## setup

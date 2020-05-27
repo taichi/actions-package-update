@@ -32,7 +32,7 @@ export default class Processor {
 
     const matrix = await this.commit();
     await this.git.checkout("-");
-    const project = await readJson(path.join(this.config.get("workspace"), "package.json"));
+    const project = await readJson(path.join(this.config.get("workingdir"), "package.json"));
 
     if (0 < matrix.length) {
       if (this.config.get("execute")) {
@@ -82,7 +82,7 @@ export default class Processor {
     const oldone = await this.collectPackage();
     const arg = process.argv.slice(2);
     const cmd = this.config.get("update");
-    const ncu = await this.runInWorkspace(cmd, arg);
+    const ncu = await this.runInWorkingDir(cmd, arg);
     if (ncu.failed) {
       this.config.logger.debug("FAILED upgrade");
       throw new Error(ncu.stderr);
@@ -154,26 +154,26 @@ export default class Processor {
     const yl = await this.getFile("yarn.lock");
     if (yl) {
       this.config.logger.debug("use yarn");
-      await this.runInWorkspace("yarn", "install");
+      await this.runInWorkingDir("yarn", "install");
       return;
     }
 
     this.config.logger.debug("use npm");
-    await this.runInWorkspace("npm", "install");
+    await this.runInWorkingDir("npm", "install");
 
     this.config.logger.debug("END   install");
   }
 
   protected async getFile(name: string, encoding: string = "utf8") {
-    const n = path.join(this.config.get("workspace"), name);
+    const n = path.join(this.config.get("workingdir"), name);
     this.config.logger.debug("getFile %s", n);
     return readFile(n, { encoding }).catch(() => undefined);
   }
 
-  protected async runInWorkspace(command: string, args?: string[] | string, opts?: ExecaOptions) {
+  protected async runInWorkingDir(command: string, args?: string[] | string, opts?: ExecaOptions) {
     const a = typeof args === "string" ? [args] : args;
-    this.config.logger.debug("runInWorkspace %s %o", command, a);
-    const kids = execa(command, a, { cwd: this.config.get("workspace"), ...opts });
+    this.config.logger.debug("runInWorkingDir %s %o", command, a);
+    const kids = execa(command, a, { cwd: this.config.get("workingdir"), ...opts });
     if (this.config.logger.levelVal < 30) {
       if (kids.stdout) {
         kids.stdout.pipe(process.stdout);
@@ -187,9 +187,9 @@ export default class Processor {
 
   protected async collectPackage(): Promise<Map<string, PackageJson>> {
     this.config.logger.debug("START collectPackage");
-    const workspace = this.config.get("workspace");
+    const workingdir = this.config.get("workingdir");
     const shadows = this.config.get("shadows");
-    const root = await readJson(`${workspace}/package.json`);
+    const root = await readJson(`${workingdir}/package.json`);
     this.config.logger.trace(root);
     const contains = (name: string, d?: Dependencies) => d && d[name];
     const filter = shadows ?
@@ -200,7 +200,7 @@ export default class Processor {
           || contains(name, root.optionalDependencies);
       };
 
-    const modules = path.join(workspace, "node_modules");
+    const modules = path.join(workingdir, "node_modules");
     const dirs = await rmd(modules);
     this.config.logger.trace("module directories are %o", dirs);
     if (dirs) {

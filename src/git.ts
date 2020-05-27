@@ -11,7 +11,7 @@ export default class Git {
   public async run(subcmd: string[] = []) {
     const msg = `git ${subcmd.join(" ")}`;
     this.conf.logger.debug(`BEGIN ${msg}`);
-    return execa("git", subcmd, { cwd: this.conf.get("workspace") })
+    return execa("git", subcmd, { cwd: this.conf.get("workingdir") })
       .then((value: execa.ExecaReturnValue) => {
         this.conf.logger.debug(`END   ${msg}`);
         if (value.failed) {
