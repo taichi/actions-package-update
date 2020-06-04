@@ -5,9 +5,9 @@ const defaultPrefix = "package-update/";
 const defaultMessage = "update dependencies";
 
 const rawConfig = convict({
-  workspace: {
+  workingdir: {
     default: "./",
-    env: "GITHUB_WORKSPACE"
+    env: "WORKING_DIR"
   },
   token: {
     default: "",
