@@ -8,7 +8,7 @@ import hash from "sha.js";
 import packageJson from "../package.json";
 import { toMarkdown, toTextTable } from "./body";
 import { Config } from "./config";
-import Git from "./git";
+import Git, { GitFileStatus } from "./git";
 import { readFile, readJson } from "./promisify";
 
 export default class Processor {
@@ -99,8 +99,20 @@ export default class Processor {
     if (0 < matrix.length) {
       this.config.logger.debug("files are changed");
       this.config.logger.trace("changed files are %o", matrix);
-      await this.git.addAll();
-      await this.git.setup(this.config.get("git").username, this.config.get("git").useremail);
+      const commitFiles = this.config.get("git").files.split(" ");
+      const filesToAdd = matrix
+        .filter((f: GitFileStatus) => commitFiles.includes(f.path))
+        .map((f: GitFileStatus) => f.path);
+      if (filesToAdd.length > 0) {
+        this.config.logger.debug("files to add are %o", filesToAdd);
+        await this.git.add(filesToAdd);
+      } else {
+        await this.git.addAll();
+      }
+      await this.git.setup(
+        this.config.get("git").username,
+        this.config.get("git").useremail
+      );
       await this.git.commit(this.config.get("git").message);
     }
     this.config.logger.debug("END   commit");

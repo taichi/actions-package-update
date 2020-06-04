@@ -125,6 +125,9 @@ this command works locally and output result to standard output.
   * specify working branch prefix. default prefix is `package-update/`.
 * `COMMIT_MESSAGE`
   * specify the commit message. default message is `update dependencies`.
+* `COMMIT_FILES`
+  * a space separated list of files that will be added to the commit. Leave empty to use git add --all.",
+    * for example, you can use `"package.json package-lock.json"` to ensure only these two files gets added to the commit
 * `UPDATE_COMMAND`
   * specify the command for update. default command is `ncu`.
     * for example, you may set to `yarn` or `npm`.
