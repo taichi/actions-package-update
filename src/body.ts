@@ -1,9 +1,9 @@
-import Table, { HorizontalAlignment, HorizontalTable } from "cli-table3";
+import Table, { HorizontalAlignment } from "cli-table3";
 import giturl from "git-url-parse";
 import packageJson from "../package.json";
 
 type PackageType =
-  "dependencies"
+  | "dependencies"
   | "devDependencies"
   | "peerDependencies"
   | "optionalDependencies"
@@ -12,7 +12,6 @@ type PackageType =
   | "shadow";
 
 export class CompareModel {
-
   public name: string;
   public current: string;
   public wanted: string;
@@ -93,7 +92,6 @@ export class CompareModel {
     if (typeof repo === "string") {
       if (2 === repo.split("/").length) {
         return `https://github.com/${repo}`;
-
       }
     } else if (repo && repo.url) {
       const u = giturl(repo.url);
@@ -109,9 +107,13 @@ class Column {
   public render: ColumnRenderer;
   public cliLayout: HorizontalAlignment;
   public cliRender: ColumnRenderer;
-  constructor(name: string,
-    layout: string, render: ColumnRenderer,
-    cliLayout: HorizontalAlignment, cliRender: ColumnRenderer) {
+  constructor(
+    name: string,
+    layout: string,
+    render: ColumnRenderer,
+    cliLayout: HorizontalAlignment,
+    cliRender: ColumnRenderer,
+  ) {
     this.name = name;
     this.layout = layout;
     this.render = render;
@@ -122,16 +124,38 @@ class Column {
 
 function makeColumns(entries: CompareModel[]) {
   const columns = [];
-  columns.push(new Column("Name", ":---- ", (cw: CompareModel) => {
-    return cw.homepage ? `[${cw.name}](${cw.homepage})` : `\`${cw.name}\``;
-  }, "left", (cw: CompareModel) => cw.name));
-  columns.push(new Column("Updating", ":--------:", (cw: CompareModel) => {
-    const u = cw.diffWantedURL();
-    return u ? `[${cw.rangeWanted()}](${u})` : cw.rangeWanted();
-  }, "center", (cw: CompareModel) => cw.rangeWanted()));
-  const depnames = ["dependencies", "devDependencies",
-    "peerDependencies", "optionalDependencies",
-    "bundledDependencies", "bundleDependencies", "shadow"];
+  columns.push(
+    new Column(
+      "Name",
+      ":---- ",
+      (cw: CompareModel) => {
+        return cw.homepage ? `[${cw.name}](${cw.homepage})` : `\`${cw.name}\``;
+      },
+      "left",
+      (cw: CompareModel) => cw.name,
+    ),
+  );
+  columns.push(
+    new Column(
+      "Updating",
+      ":--------:",
+      (cw: CompareModel) => {
+        const u = cw.diffWantedURL();
+        return u ? `[${cw.rangeWanted()}](${u})` : cw.rangeWanted();
+      },
+      "center",
+      (cw: CompareModel) => cw.rangeWanted(),
+    ),
+  );
+  const depnames = [
+    "dependencies",
+    "devDependencies",
+    "peerDependencies",
+    "optionalDependencies",
+    "bundledDependencies",
+    "bundleDependencies",
+    "shadow",
+  ];
   depnames.forEach((n: string) => {
     if (entries.find((v: CompareModel) => v.packageType === n)) {
       const fn = (cw: CompareModel) => cw.packageType === n ? "*" : " ";
@@ -158,23 +182,38 @@ function rows(columns: Column[], entries: CompareModel[]) {
   }).join("\n");
 }
 
-export function toTextTable(project: PackageJson, oldone: Map<string, PackageJson>, newone: Map<string, PackageJson>) {
+export function toTextTable(
+  project: PackageJson,
+  oldone: Map<string, PackageJson>,
+  newone: Map<string, PackageJson>,
+) {
   const models = toCompareModels(project, oldone, newone);
   const columns = makeColumns(models);
-  const table = <HorizontalTable>new Table({
+  const table = new Table({
     head: columns.map((col: Column) => col.name),
     chars: {
-      "top": "=", "top-mid": "=", "top-left": "", "top-right": "="
-      , "bottom": "=", "bottom-mid": "=", "bottom-left": "", "bottom-right": "="
-      , "left": "|", "left-mid": "", "mid": "-", "mid-mid": "-"
-      , "right": "|", "right-mid": "", "middle": "|"
+      "top": "=",
+      "top-mid": "=",
+      "top-left": "",
+      "top-right": "=",
+      "bottom": "=",
+      "bottom-mid": "=",
+      "bottom-left": "",
+      "bottom-right": "=",
+      "left": "|",
+      "left-mid": "",
+      "mid": "-",
+      "mid-mid": "-",
+      "right": "|",
+      "right-mid": "",
+      "middle": "|",
     },
     colAligns: columns.map((col: Column) => col.cliLayout),
     style: {
       head: [],
       "padding-left": 1,
-      "padding-right": 1
-    }
+      "padding-right": 1,
+    },
   });
 
   models.forEach((c: CompareModel) => {
@@ -183,7 +222,11 @@ export function toTextTable(project: PackageJson, oldone: Map<string, PackageJso
   return table.toString();
 }
 
-export function toMarkdown(project: PackageJson, oldone: Map<string, PackageJson>, newone: Map<string, PackageJson>) {
+export function toMarkdown(
+  project: PackageJson,
+  oldone: Map<string, PackageJson>,
+  newone: Map<string, PackageJson>,
+) {
   const models = toCompareModels(project, oldone, newone);
   const columns = makeColumns(models);
   return `## Updating Dependencies
@@ -194,16 +237,18 @@ ${rows(columns, models)}
 Powered by [${packageJson.name}](${packageJson.homepage})`;
 }
 
-
-function toCompareModels(project: PackageJson, oldone: Map<string, PackageJson>, newone: Map<string, PackageJson>) {
+function toCompareModels(
+  project: PackageJson,
+  oldone: Map<string, PackageJson>,
+  newone: Map<string, PackageJson>,
+) {
   return Array.from(oldone.entries())
     .filter(([name, o]: [string, PackageJson]) => {
       const n = newone.get(name);
       return n && n.version && n.version !== o.version;
     })
     .map(([name, o]: [string, PackageJson]) => {
-      const n = <PackageJson>newone.get(name);
+      const n = <PackageJson> newone.get(name);
       return new CompareModel(project, o, n);
     });
 }
-
