@@ -2,6 +2,7 @@
 import execa from "execa";
 import { Config } from "./config";
 
+export type GitFileStatus = { x: string; y: string; path: string };
 export default class Git {
   private readonly conf: Config;
   constructor(config: Config) {
@@ -52,7 +53,7 @@ export default class Git {
     return this.run(["checkout", "-b", newBranch]);
   }
 
-  public async status() {
+  public async status(): Promise<GitFileStatus[]> {
     const result = await this.run(["status", "--porcelain=v1"]);
     return result.stdout.split(/[\r]?\n/)
       .filter((s: string) => s)
@@ -66,6 +67,10 @@ export default class Git {
 
   public async addAll() {
     return this.run(["add", "--all"]);
+  }
+
+  public async add(files: string[]) {
+    return this.run(["add", ...files]);
   }
 
   public async commit(message: string) {
