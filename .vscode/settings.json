@@ -4,5 +4,6 @@
     "source.fixAll.tslint": true
   },
   "editor.renderControlCharacters": false,
-  "editor.renderWhitespace": "all"
+  "editor.renderWhitespace": "all",
+  "deno.enable": false
 }
