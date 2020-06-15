@@ -112,7 +112,7 @@ class Column {
     layout: string,
     render: ColumnRenderer,
     cliLayout: HorizontalAlignment,
-    cliRender: ColumnRenderer,
+    cliRender: ColumnRenderer
   ) {
     this.name = name;
     this.layout = layout;
@@ -132,8 +132,8 @@ function makeColumns(entries: CompareModel[]) {
         return cw.homepage ? `[${cw.name}](${cw.homepage})` : `\`${cw.name}\``;
       },
       "left",
-      (cw: CompareModel) => cw.name,
-    ),
+      (cw: CompareModel) => cw.name
+    )
   );
   columns.push(
     new Column(
@@ -144,8 +144,8 @@ function makeColumns(entries: CompareModel[]) {
         return u ? `[${cw.rangeWanted()}](${u})` : cw.rangeWanted();
       },
       "center",
-      (cw: CompareModel) => cw.rangeWanted(),
-    ),
+      (cw: CompareModel) => cw.rangeWanted()
+    )
   );
   const depnames = [
     "dependencies",
@@ -154,11 +154,11 @@ function makeColumns(entries: CompareModel[]) {
     "optionalDependencies",
     "bundledDependencies",
     "bundleDependencies",
-    "shadow",
+    "shadow"
   ];
   depnames.forEach((n: string) => {
     if (entries.find((v: CompareModel) => v.packageType === n)) {
-      const fn = (cw: CompareModel) => cw.packageType === n ? "*" : " ";
+      const fn = (cw: CompareModel) => (cw.packageType === n ? "*" : " ");
       columns.push(new Column(n, ":-:", fn, "center", fn));
     }
   });
@@ -176,44 +176,46 @@ function layouts(columns: Column[]) {
 }
 
 function rows(columns: Column[], entries: CompareModel[]) {
-  return entries.map((c: CompareModel) => {
-    const a = columns.map((col: Column) => col.render(c));
-    return `| ${a.join(" | ")} |`;
-  }).join("\n");
+  return entries
+    .map((c: CompareModel) => {
+      const a = columns.map((col: Column) => col.render(c));
+      return `| ${a.join(" | ")} |`;
+    })
+    .join("\n");
 }
 
 export function toTextTable(
   project: PackageJson,
   oldone: Map<string, PackageJson>,
-  newone: Map<string, PackageJson>,
+  newone: Map<string, PackageJson>
 ) {
   const models = toCompareModels(project, oldone, newone);
   const columns = makeColumns(models);
   const table = new Table({
     head: columns.map((col: Column) => col.name),
     chars: {
-      "top": "=",
+      top: "=",
       "top-mid": "=",
       "top-left": "",
       "top-right": "=",
-      "bottom": "=",
+      bottom: "=",
       "bottom-mid": "=",
       "bottom-left": "",
       "bottom-right": "=",
-      "left": "|",
+      left: "|",
       "left-mid": "",
-      "mid": "-",
+      mid: "-",
       "mid-mid": "-",
-      "right": "|",
+      right: "|",
       "right-mid": "",
-      "middle": "|",
+      middle: "|"
     },
     colAligns: columns.map((col: Column) => col.cliLayout),
     style: {
       head: [],
       "padding-left": 1,
-      "padding-right": 1,
-    },
+      "padding-right": 1
+    }
   });
 
   models.forEach((c: CompareModel) => {
@@ -225,7 +227,7 @@ export function toTextTable(
 export function toMarkdown(
   project: PackageJson,
   oldone: Map<string, PackageJson>,
-  newone: Map<string, PackageJson>,
+  newone: Map<string, PackageJson>
 ) {
   const models = toCompareModels(project, oldone, newone);
   const columns = makeColumns(models);
@@ -240,7 +242,7 @@ Powered by [${packageJson.name}](${packageJson.homepage})`;
 function toCompareModels(
   project: PackageJson,
   oldone: Map<string, PackageJson>,
-  newone: Map<string, PackageJson>,
+  newone: Map<string, PackageJson>
 ) {
   return Array.from(oldone.entries())
     .filter(([name, o]: [string, PackageJson]) => {
@@ -248,7 +250,7 @@ function toCompareModels(
       return n && n.version && n.version !== o.version;
     })
     .map(([name, o]: [string, PackageJson]) => {
-      const n = <PackageJson> newone.get(name);
+      const n = <PackageJson>newone.get(name);
       return new CompareModel(project, o, n);
     });
 }

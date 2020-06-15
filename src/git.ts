@@ -1,4 +1,3 @@
-
 import execa from "execa";
 import { Config } from "./config";
 
@@ -12,19 +11,21 @@ export default class Git {
   public async run(subcmd: string[] = []) {
     const msg = `git ${subcmd.join(" ")}`;
     this.conf.logger.debug(`BEGIN ${msg}`);
-    return execa("git", subcmd, { cwd: this.conf.get("workingdir") })
-      .then((value: execa.ExecaReturnValue) => {
+    return execa("git", subcmd, { cwd: this.conf.get("workingdir") }).then(
+      (value: execa.ExecaReturnValue) => {
         this.conf.logger.debug(`END   ${msg}`);
         if (value.failed) {
           throw new Error(`${msg} failed`);
         }
         return value;
-      });
+      }
+    );
   }
 
   public async setup(name: string, email: string) {
-    return this.config("user.name", name)
-      .then(() => this.config("user.email", email));
+    return this.config("user.name", name).then(() =>
+      this.config("user.email", email)
+    );
   }
 
   public async config(key: string, value: string) {
@@ -55,7 +56,8 @@ export default class Git {
 
   public async status(): Promise<GitFileStatus[]> {
     const result = await this.run(["status", "--porcelain=v1"]);
-    return result.stdout.split(/[\r]?\n/)
+    return result.stdout
+      .split(/[\r]?\n/)
       .filter((s: string) => s)
       .map((s: string) => {
         const x = s[0];

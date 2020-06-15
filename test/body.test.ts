@@ -3,29 +3,34 @@ import { readJson } from "@src/promisify";
 import test, { ExecutionContext } from "ava";
 import strip from "strip-ansi";
 
-
 test("toMarkdown", async (t: ExecutionContext) => {
   const [project, oldone, newone] = await setup();
 
   const actual = toMarkdown(project, oldone, newone);
-  t.is(actual, `## Updating Dependencies
+  t.is(
+    actual,
+    `## Updating Dependencies
 | Name | Updating | dependencies |
 | :----  | :--------: | :-: |
 | [classnames](https://github.com/JedWatson/classnames#readme) | 2.2.0...2.2.6 | * |
 | [react-dom](https://facebook.github.io/react/) | 15.0.0...16.8.6 | * |
 | [react](https://facebook.github.io/react/) | 15.0.0...16.8.6 | * |
 
-Powered by [actions-package-update](https://github.com/taichi/actions-package-update)`);
+Powered by [actions-package-update](https://github.com/taichi/actions-package-update)`
+  );
 });
 
-async function setup(): Promise<[PackageJson,
-  Map<string, PackageJson>, Map<string, PackageJson>]> {
+async function setup(): Promise<
+  [PackageJson, Map<string, PackageJson>, Map<string, PackageJson>]
+> {
   const names = ["classnames", "react-dom", "react"];
   const toPkgMap = async (s: string) => {
-    const m = new Map;
-    const ary = names.map((n: string) => {
-      return `test/fixture/body/${s}/${n}.package.json`;
-    }).map(readJson);
+    const m = new Map();
+    const ary = names
+      .map((n: string) => {
+        return `test/fixture/body/${s}/${n}.package.json`;
+      })
+      .map(readJson);
     for await (const pkg of ary) {
       m.set(pkg.name, pkg);
     }
@@ -43,7 +48,9 @@ test("toTextTable", async (t: ExecutionContext) => {
   const [project, oldone, newone] = await setup();
 
   const actual = toTextTable(project, oldone, newone);
-  t.is(strip(actual), `==============================================
+  t.is(
+    strip(actual),
+    `==============================================
 | Name       |    Updating     | dependencies |
 ---------------------------------------------
 | classnames |  2.2.0...2.2.6  |      *       |
@@ -51,5 +58,6 @@ test("toTextTable", async (t: ExecutionContext) => {
 | react-dom  | 15.0.0...16.8.6 |      *       |
 ---------------------------------------------
 | react      | 15.0.0...16.8.6 |      *       |
-==============================================`);
+==============================================`
+  );
 });

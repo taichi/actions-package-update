@@ -33,7 +33,7 @@ export default class Processor {
     const matrix = await this.commit();
     await this.git.checkout("-");
     const project = await readJson(
-      path.join(this.config.get("workingdir"), "package.json"),
+      path.join(this.config.get("workingdir"), "package.json")
     );
 
     if (0 < matrix.length) {
@@ -41,7 +41,7 @@ export default class Processor {
         await this.pullRequest(newBranch, project, oldone, newone, now);
       } else {
         this.config.logger.info(
-          "git push is skipped. Because EXECUTE environment variable is not true",
+          "git push is skipped. Because EXECUTE environment variable is not true"
         );
         this.config.logger.info(`\n${toTextTable(project, oldone, newone)}`);
       }
@@ -51,7 +51,7 @@ export default class Processor {
 
     if (!this.config.get("keep")) {
       this.config.logger.info(
-        "Delete working branch because KEEP environment variable is not true",
+        "Delete working branch because KEEP environment variable is not true"
       );
       await this.git.deleteBranch(newBranch);
     }
@@ -66,7 +66,7 @@ export default class Processor {
       throw new Error("package.json not found");
     }
 
-    const hex = new hash.sha1().update(json, "utf8").digest("hex");
+    const hex = new hash.sha1().update(json.toString(), "utf8").digest("hex");
     const newBranch = `${this.config.get("git").prefix}${now}/${hex}`;
 
     await this.git.fetch("origin");
@@ -117,7 +117,7 @@ export default class Processor {
       }
       await this.git.setup(
         this.config.get("git").username,
-        this.config.get("git").useremail,
+        this.config.get("git").useremail
       );
       await this.git.commit(this.config.get("git").message);
     }
@@ -128,7 +128,7 @@ export default class Processor {
   protected async newGitHub(config: Config, repo: giturl.GitUrl) {
     const ghopt: Octokit.Options = {
       auth: `token ${config.get("token")}`,
-      userAgent: `${packageJson.name}/${packageJson.version}`,
+      userAgent: `${packageJson.name}/${packageJson.version}`
     };
     if (repo.resource !== "github.com") {
       // for GHE
@@ -142,7 +142,7 @@ export default class Processor {
     project: PackageJson,
     oldone: Map<string, PackageJson>,
     newone: Map<string, PackageJson>,
-    now: string,
+    now: string
   ) {
     this.config.logger.debug("START pullRequest");
 
@@ -153,7 +153,7 @@ export default class Processor {
     const github = await this.newGitHub(this.config, origin);
     const repo = await github.repos.get({
       owner: origin.owner,
-      repo: origin.name,
+      repo: origin.name
     });
     const pr: Octokit.PullsCreateParams = {
       owner: origin.owner,
@@ -161,7 +161,7 @@ export default class Processor {
       base: repo.data.default_branch,
       head: newBranch,
       title: `update dependencies at ${now}`,
-      body,
+      body
     };
     this.config.logger.debug("Pull Request create");
     this.config.logger.trace(pr);
@@ -184,24 +184,23 @@ export default class Processor {
     this.config.logger.debug("END   install");
   }
 
-  protected async getFile(name: string, encoding: string = "utf8") {
+  protected async getFile(name: string) {
     const n = path.join(this.config.get("workingdir"), name);
     this.config.logger.debug("getFile %s", n);
-    return readFile(n, { encoding }).catch(() => undefined);
+    return readFile(n, { encoding: "utf8" }).catch(() => undefined);
   }
 
   protected async runInWorkingDir(
     command: string,
     args?: string[] | string,
-    opts?: ExecaOptions,
+    opts?: ExecaOptions
   ) {
     const a = typeof args === "string" ? [args] : args;
     this.config.logger.debug("runInWorkingDir %s %o", command, a);
-    const kids = execa(
-      command,
-      a,
-      { cwd: this.config.get("workingdir"), ...opts },
-    );
+    const kids = execa(command, a, {
+      cwd: this.config.get("workingdir"),
+      ...opts
+    });
     if (this.config.logger.levelVal < 30) {
       if (kids.stdout) {
         kids.stdout.pipe(process.stdout);
@@ -220,25 +219,26 @@ export default class Processor {
     const root = await readJson(`${workingdir}/package.json`);
     this.config.logger.trace(root);
     const contains = (name: string, d?: Dependencies) => d && d[name];
-    const filter = shadows
-      ? () => true
-      : ([name, _]: [string, PackageJson]) => {
-        return contains(name, root.dependencies) ||
-          contains(name, root.devDependencies) ||
-          contains(name, root.optionalDependencies);
-      };
+    const withShadows = ([name, _]: [string, PackageJson]) => {
+      return (
+        contains(name, root.dependencies) ||
+        contains(name, root.devDependencies) ||
+        contains(name, root.optionalDependencies)
+      );
+    };
+    const filter = shadows ? () => true : withShadows;
 
     const modules = path.join(workingdir, "node_modules");
     const dirs = await rmd(modules);
     this.config.logger.trace("module directories are %o", dirs);
     if (dirs) {
       const pkgs = await Promise.all(
-        dirs.map((dir: string) => readJson(`${modules}/${dir}/package.json`)),
+        dirs.map((dir: string) => readJson(`${modules}/${dir}/package.json`))
       );
       this.config.logger.trace("packages %o", pkgs);
-      const nvs = pkgs.map<[string, PackageJson]>((
-        p: PackageJson,
-      ) => [p.name, p]).filter(filter);
+      const nvs = pkgs
+        .map<[string, PackageJson]>((p: PackageJson) => [p.name, p])
+        .filter(filter);
       this.config.logger.debug("END   collectPackage");
       return new Map(nvs);
     }
