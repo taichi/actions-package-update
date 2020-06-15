@@ -36,7 +36,7 @@ const rawConfig = convict({
       default: "",
       doc: "specify the commit auther email.",
       env: "AUTHOR_EMAIL",
-      format: "email",
+      format: "email"
     },
     prefix: {
       default: defaultPrefix,
@@ -67,7 +67,8 @@ const rawConfig = convict({
   },
   execute: {
     default: false,
-    doc: "if you don't specify this option, allows you to test this application.",
+    doc:
+      "if you don't specify this option, allows you to test this application.",
     env: "EXECUTE",
     format: Boolean
   },

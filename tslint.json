@@ -56,7 +56,13 @@
       "avoid-template"
     ],
     "newline-per-chained-call": false,
-    "no-use-before-declare": false
+    "no-use-before-declare": false,
+    "prettier": [
+      true,
+      {
+        "trailingComma": "none"
+      }
+    ]
   },
   "rulesDirectory": [
     "tslint-plugin-prettier"
