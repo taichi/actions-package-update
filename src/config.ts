@@ -1,5 +1,8 @@
 import convict from "convict";
+import validator from "convict-format-with-validator";
 import pino from "pino";
+
+convict.addFormats(validator);
 
 const defaultPrefix = "package-update/";
 const defaultMessage = "update dependencies";
