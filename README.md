@@ -13,7 +13,7 @@ GitHub Action for package.json update.
 
 below is the complete workflow example.
 
-```
+```yaml
 on:
   schedule:
   - cron: 0 0 * * 3
@@ -48,7 +48,7 @@ jobs:
 
 * Update devDependencies only
 
-```
+```yaml
 - name: package-update
   uses: taichi/actions-package-update@master
   env:
@@ -62,7 +62,7 @@ jobs:
 
 * Use yarn upgrade
 
-```
+```yaml
 - name: package-update
   uses: taichi/actions-package-update@master
   env:
@@ -77,7 +77,7 @@ jobs:
 
 * Use npm update
 
-```
+```yaml
 - name: package-update
   uses: taichi/actions-package-update@master
   env:
@@ -88,6 +88,23 @@ jobs:
     UPDATE_COMMAND: npm
   with:
     args: update
+```
+
+* Use ncu with yarn workspaces
+
+(you need to install `wsrun` and `npm-check-updates` in your root package)
+
+```yaml
+- name: package-update
+  uses: taichi/actions-package-update@master
+  env:
+    AUTHOR_EMAIL: john@example.com
+    AUTHOR_NAME: John
+    EXECUTE: "true"
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    UPDATE_COMMAND: yarn
+  with:
+    args: wsrun --serial ncu -u --packageFile package.json
 ```
 
 ## Local or CI Server|Service

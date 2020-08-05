@@ -14,9 +14,7 @@ test("toMarkdown", async (t: ExecutionContext) => {
 | :----  | :--------: | :-: |
 | [classnames](https://github.com/JedWatson/classnames#readme) | 2.2.0...2.2.6 | * |
 | [react-dom](https://facebook.github.io/react/) | 15.0.0...16.8.6 | * |
-| [react](https://facebook.github.io/react/) | 15.0.0...16.8.6 | * |
-
-Powered by [actions-package-update](https://github.com/taichi/actions-package-update)`
+| [react](https://facebook.github.io/react/) | 15.0.0...16.8.6 | * |`
   );
 });
 

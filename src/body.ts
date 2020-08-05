@@ -11,6 +11,8 @@ type PackageType =
   | "bundleDependencies"
   | "shadow";
 
+export type PackageJsonByName = Map<string, PackageJson>;
+
 export class CompareModel {
   public name: string;
   public current: string;
@@ -186,8 +188,8 @@ function rows(columns: Column[], entries: CompareModel[]) {
 
 export function toTextTable(
   project: PackageJson,
-  oldone: Map<string, PackageJson>,
-  newone: Map<string, PackageJson>
+  oldone: PackageJsonByName,
+  newone: PackageJsonByName
 ) {
   const models = toCompareModels(project, oldone, newone);
   const columns = makeColumns(models);
@@ -226,22 +228,19 @@ export function toTextTable(
 
 export function toMarkdown(
   project: PackageJson,
-  oldone: Map<string, PackageJson>,
-  newone: Map<string, PackageJson>
+  oldone: PackageJsonByName,
+  newone: PackageJsonByName
 ) {
   const models = toCompareModels(project, oldone, newone);
   const columns = makeColumns(models);
-  return `## Updating Dependencies
-${headers(columns)}
+  return `${headers(columns)}
 ${layouts(columns)}
-${rows(columns, models)}
-
-Powered by [${packageJson.name}](${packageJson.homepage})`;
+${rows(columns, models)}`;
 }
 
 function toCompareModels(
   project: PackageJson,
-  oldone: Map<string, PackageJson>,
+  oldone: PackageJsonByName,
   newone: Map<string, PackageJson>
 ) {
   return Array.from(oldone.entries())
