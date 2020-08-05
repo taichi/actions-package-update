@@ -237,7 +237,7 @@ export default class Processor {
       repo: origin.name,
       base: repo.data.default_branch,
       head: newBranch,
-      title: `update dependencies at ${now}`,
+      title: this.config.get("title"),
       body: `${body}\n\nPowered by [${packageJson.name}](${packageJson.homepage})`
     };
     this.config.logger.debug("Pull Request create");
