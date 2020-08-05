@@ -9,8 +9,7 @@ test("toMarkdown", async (t: ExecutionContext) => {
   const actual = toMarkdown(project, oldone, newone);
   t.is(
     actual,
-    `## Updating Dependencies
-| Name | Updating | dependencies |
+    `| Name | Updating | dependencies |
 | :----  | :--------: | :-: |
 | [classnames](https://github.com/JedWatson/classnames#readme) | 2.2.0...2.2.6 | * |
 | [react-dom](https://facebook.github.io/react/) | 15.0.0...16.8.6 | * |
