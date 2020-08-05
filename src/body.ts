@@ -1,6 +1,5 @@
 import Table, { HorizontalAlignment } from "cli-table3";
 import giturl from "git-url-parse";
-import packageJson from "../package.json";
 
 type PackageType =
   | "dependencies"
