@@ -2,9 +2,11 @@ import { Octokit } from "@octokit/rest";
 import rmd from "@pnpm/read-modules-dir";
 import execa, { Options as ExecaOptions } from "execa";
 import giturl from "git-url-parse";
+import glob from "glob";
 import moment from "moment";
 import path from "path";
 import hash from "sha.js";
+import { promisify } from "util";
 import packageJson from "../package.json";
 import { PackageJsonByName, toMarkdown, toTextTable } from "./body";
 import { Config } from "./config";
@@ -70,7 +72,7 @@ export default class Processor {
         this.config.logger.info(
           [
             "",
-            await Promise.all(
+            ...(await Promise.all(
               Object.entries(packageDiffs).map(
                 async (
                   [directoryName, packageDiff]: ObjectEntry<
@@ -84,7 +86,7 @@ export default class Processor {
                     packageDiff.newone
                   )} `
               )
-            )
+            ))
           ].join("\n")
         );
       }
@@ -299,10 +301,12 @@ export default class Processor {
     const workingdirs = rootJson.workspaces
       ? [
           rootWorkingdir,
-          ...rootJson.workspaces.map((workspace: string) =>
-            path.join(rootWorkingdir, workspace)
-          )
-        ]
+          ...(await Promise.all(
+            rootJson.workspaces.map((workspace: string) =>
+              promisify(glob)(path.join(rootWorkingdir, workspace))
+            )
+          ))
+        ].flat()
       : [rootWorkingdir];
 
     return Object.fromEntries(
