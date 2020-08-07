@@ -1,6 +1,6 @@
 FROM node:latest
 
-LABEL version="0.9.0"
+LABEL version="0.10.0"
 LABEL repository="https://github.com/taichi/actions-package-update"
 LABEL homepage="https://github.com/taichi/actions-package-update"
 LABEL maintainer="Sato Taichi <ryushi+actions@gmail.com>"
