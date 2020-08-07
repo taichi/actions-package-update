@@ -47,7 +47,7 @@ const rawConfig = convict({
       env: "BRANCH_PREFIX"
     },
     message: {
-      default: "update dependencies",
+      default: defaultMessage,
       doc: `specify the commit message. default message is ${defaultMessage}`,
       env: "COMMIT_MESSAGE"
     },
@@ -57,6 +57,11 @@ const rawConfig = convict({
         "a space separated list of file that will be added to the commit. Leave empty to add all changes.",
       env: "COMMIT_FILES"
     }
+  },
+  title: {
+    default: defaultMessage,
+    doc: `specify the commit message. default message is ${defaultMessage}`,
+    env: "PULL_REQUEST_TITLE"
   },
   update: {
     default: "ncu",

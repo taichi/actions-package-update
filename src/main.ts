@@ -2,14 +2,40 @@ import { Octokit } from "@octokit/rest";
 import rmd from "@pnpm/read-modules-dir";
 import execa, { Options as ExecaOptions } from "execa";
 import giturl from "git-url-parse";
+import glob from "glob";
 import moment from "moment";
 import path from "path";
 import hash from "sha.js";
+import { promisify } from "util";
 import packageJson from "../package.json";
-import { toMarkdown, toTextTable } from "./body";
+import { PackageJsonByName, toMarkdown, toTextTable } from "./body";
 import { Config } from "./config";
 import Git, { GitFileStatus } from "./git";
 import { readFile, readJson } from "./promisify";
+
+type ObjectEntry<T extends Record<string, unknown>> = [string, T[keyof T]];
+
+const mapObjectValues = <TInitial, TTransformed>(
+  obj: Record<string, TInitial>,
+  callbackFn: (key: string, value: TInitial) => TTransformed
+): Record<string, TTransformed> =>
+  Object.fromEntries(
+    Object.entries(
+      obj
+    ).map(([key, value]: ObjectEntry<Record<string, TInitial>>) => [
+      key,
+      callbackFn(key, value)
+    ])
+  );
+
+type PackageDiff = {
+  directoryName: string;
+  oldone: PackageJsonByName;
+  newone: PackageJsonByName;
+};
+
+type PackageJsonByNameByDirectoryName = Record<string, PackageJsonByName>;
+type PackageDiffByDirectory = Record<string, PackageDiff>;
 
 export default class Processor {
   private readonly config: Config;
@@ -28,7 +54,7 @@ export default class Processor {
       return `Found existing branch ${found}`;
     }
 
-    const { oldone, newone } = await this.upgrade();
+    const packageDiffs = await this.upgrade();
 
     const matrix = await this.commit();
     await this.git.checkout("-");
@@ -38,12 +64,31 @@ export default class Processor {
 
     if (0 < matrix.length) {
       if (this.config.get("execute")) {
-        await this.pullRequest(newBranch, project, oldone, newone, now);
+        await this.pullRequest(newBranch, project, packageDiffs, now);
       } else {
         this.config.logger.info(
           "git push is skipped. Because EXECUTE environment variable is not true"
         );
-        this.config.logger.info(`\n${toTextTable(project, oldone, newone)}`);
+        this.config.logger.info(
+          [
+            "",
+            ...(await Promise.all(
+              Object.entries(packageDiffs).map(
+                async (
+                  [directoryName, packageDiff]: ObjectEntry<
+                    PackageDiffByDirectory
+                  >,
+                  index: number
+                ) =>
+                  `${index === 0 ? "" : directoryName}\n${toTextTable(
+                    await readJson(path.join(directoryName, "package.json")),
+                    packageDiff.oldone,
+                    packageDiff.newone
+                  )} `
+              )
+            ))
+          ].join("\n")
+        );
       }
     } else {
       this.config.logger.info("Did not find outdated dependencies.");
@@ -82,10 +127,10 @@ export default class Processor {
     return { found, newBranch };
   }
 
-  protected async upgrade() {
+  protected async upgrade(): Promise<PackageDiffByDirectory> {
     this.config.logger.debug("START upgrade");
     await this.install();
-    const oldone = await this.collectPackage();
+    const oldones = await this.collectPackage();
     const arg = process.argv.slice(2);
     const cmd = this.config.get("update");
     const ncu = await this.runInWorkingDir(cmd, arg);
@@ -94,9 +139,21 @@ export default class Processor {
       throw new Error(ncu.stderr);
     }
     await this.install();
-    const newone = await this.collectPackage();
+    const newones = await this.collectPackage();
     this.config.logger.debug("END   upgrade");
-    return { oldone, newone };
+
+    if (oldones.length !== newones.length) {
+      throw new Error("received more package.jsons than previous");
+    }
+
+    return mapObjectValues(
+      oldones,
+      (directoryName: string, oldone: PackageJsonByName) => ({
+        directoryName,
+        oldone,
+        newone: newones[directoryName]
+      })
+    );
   }
 
   protected async commit() {
@@ -140,14 +197,36 @@ export default class Processor {
   protected async pullRequest(
     newBranch: string,
     project: PackageJson,
-    oldone: Map<string, PackageJson>,
-    newone: Map<string, PackageJson>,
+    packageDiffs: PackageDiffByDirectory,
     now: string
   ) {
     this.config.logger.debug("START pullRequest");
 
     await this.git.push("origin", newBranch);
-    const body = toMarkdown(project, oldone, newone);
+
+    this.config.logger.trace(packageDiffs);
+
+    const body = (
+      await Promise.all(
+        Object.entries(packageDiffs).map(
+          async (
+            [directoryName, packageDiff]: ObjectEntry<PackageDiffByDirectory>,
+            index: number
+          ) =>
+            `${
+              Object.entries(packageDiffs).length > 1
+                ? index === 0
+                  ? "## root"
+                  : `## ${directoryName}`
+                : "## Updating Dependencies"
+            }\n${toMarkdown(
+              await readJson(path.join(directoryName, "package.json")),
+              packageDiff.oldone,
+              packageDiff.newone
+            )}`
+        )
+      )
+    ).join("\n");
     const url = await this.git.remoteurl("origin");
     const origin = giturl(url);
     const github = await this.newGitHub(this.config, origin);
@@ -160,8 +239,8 @@ export default class Processor {
       repo: origin.name,
       base: repo.data.default_branch,
       head: newBranch,
-      title: `update dependencies at ${now}`,
-      body
+      title: this.config.get("title"),
+      body: `${body}\n\nPowered by [${packageJson.name}](${packageJson.homepage})`
     };
     this.config.logger.debug("Pull Request create");
     this.config.logger.trace(pr);
@@ -212,37 +291,84 @@ export default class Processor {
     return kids;
   }
 
-  protected async collectPackage(): Promise<Map<string, PackageJson>> {
-    this.config.logger.debug("START collectPackage");
-    const workingdir = this.config.get("workingdir");
-    const shadows = this.config.get("shadows");
-    const root = await readJson(`${workingdir}/package.json`);
-    this.config.logger.trace(root);
-    const contains = (name: string, d?: Dependencies) => d && d[name];
-    const withShadows = ([name, _]: [string, PackageJson]) => {
-      return (
-        contains(name, root.dependencies) ||
-        contains(name, root.devDependencies) ||
-        contains(name, root.optionalDependencies)
-      );
-    };
-    const filter = shadows ? () => true : withShadows;
+  protected async collectPackage(): Promise<PackageJsonByNameByDirectoryName> {
+    const rootWorkingdir = this.config.get("workingdir");
 
-    const modules = path.join(workingdir, "node_modules");
-    const dirs = await rmd(modules);
-    this.config.logger.trace("module directories are %o", dirs);
-    if (dirs) {
-      const pkgs = await Promise.all(
-        dirs.map((dir: string) => readJson(`${modules}/${dir}/package.json`))
-      );
-      this.config.logger.trace("packages %o", pkgs);
-      const nvs = pkgs
-        .map<[string, PackageJson]>((p: PackageJson) => [p.name, p])
-        .filter(filter);
-      this.config.logger.debug("END   collectPackage");
-      return new Map(nvs);
-    }
-    this.config.logger.debug("END   collectPackage");
-    return new Map();
+    const rootJson: PackageJson & { workspaces?: string[] } = await readJson(
+      path.join(rootWorkingdir, "./package.json")
+    );
+
+    const workingdirs = rootJson.workspaces
+      ? [
+          rootWorkingdir,
+          ...(await Promise.all(
+            rootJson.workspaces.map((workspace: string) =>
+              promisify(glob)(path.join(rootWorkingdir, workspace))
+            )
+          ))
+        ].flat()
+      : [rootWorkingdir];
+
+    return Object.fromEntries(
+      await Promise.all(
+        workingdirs.map(
+          async (
+            workingdir: string
+          ): Promise<ObjectEntry<PackageJsonByNameByDirectoryName>> => {
+            this.config.logger.debug("START collectPackage");
+            const shadows = this.config.get("shadows");
+            const root = await readJson(
+              path.join(workingdir, "./package.json")
+            );
+            this.config.logger.trace(root);
+            const contains = (name: string, d?: Dependencies) => d && d[name];
+            const withShadows = ([name, _]: [string, PackageJson]) => {
+              return (
+                contains(name, root.dependencies) ||
+                contains(name, root.devDependencies) ||
+                contains(name, root.optionalDependencies)
+              );
+            };
+            const filter = shadows ? () => true : withShadows;
+
+            const rootModules = path.join(rootWorkingdir, "node_modules");
+            const workspaceModules =
+              rootWorkingdir !== workingdir
+                ? path.join(workingdir, "node_modules")
+                : undefined;
+
+            const dirs = await rmd(rootModules);
+            const workspaceDirs = workspaceModules
+              ? await rmd(workspaceModules)
+              : undefined;
+
+            this.config.logger.trace("module directories are %o", dirs);
+            if (dirs) {
+              const pkgs = await Promise.all(
+                dirs.map((dir: string) =>
+                  readJson(`${rootModules}/${dir}/package.json`)
+                )
+              );
+              const workspacePkgs = workspaceDirs
+                ? await Promise.all(
+                    workspaceDirs.map((dir: string) =>
+                      readJson(`${workspaceModules}/${dir}/package.json`)
+                    )
+                  )
+                : [];
+
+              this.config.logger.trace("packages %o", pkgs);
+              const nvs = [...workspacePkgs, ...pkgs]
+                .map<[string, PackageJson]>((p: PackageJson) => [p.name, p])
+                .filter(filter);
+              this.config.logger.debug("END   collectPackage");
+              return [workingdir, new Map(nvs)];
+            }
+            this.config.logger.debug("END   collectPackage");
+            return [workingdir, new Map()];
+          }
+        )
+      )
+    );
   }
 }

@@ -39,6 +39,7 @@
     "dotenv": "^8.2.0",
     "execa": "^4.0.2",
     "git-url-parse": "^11.1.2",
+    "glob": "^7.1.6",
     "moment": "^2.26.0",
     "pino": "^6.3.2",
     "pino-pretty": "^4.0.0",

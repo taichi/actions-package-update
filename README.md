@@ -13,7 +13,7 @@ GitHub Action for package.json update.
 
 below is the complete workflow example.
 
-```
+```yaml
 on:
   schedule:
   - cron: 0 0 * * 3
@@ -48,47 +48,78 @@ jobs:
 
 * Update devDependencies only
 
-```
-- name: package-update
-  uses: taichi/actions-package-update@master
-  env:
-    AUTHOR_EMAIL: john@example.com
-    AUTHOR_NAME: John
-    EXECUTE: "true"
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  with:
-    args: -u --packageFile package.json  --dep dev
-```
+  ```yaml
+  - name: package-update
+    uses: taichi/actions-package-update@master
+    env:
+      AUTHOR_EMAIL: john@example.com
+      AUTHOR_NAME: John
+      EXECUTE: "true"
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      args: -u --packageFile package.json  --dep dev
+  ```
 
 * Use yarn upgrade
 
-```
-- name: package-update
-  uses: taichi/actions-package-update@master
-  env:
-    AUTHOR_EMAIL: john@example.com
-    AUTHOR_NAME: John
-    EXECUTE: "true"
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    UPDATE_COMMAND: yarn
-  with:
-    args: upgrade --latest
-```
+  ```yaml
+  - name: package-update
+    uses: taichi/actions-package-update@master
+    env:
+      AUTHOR_EMAIL: john@example.com
+      AUTHOR_NAME: John
+      EXECUTE: "true"
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      UPDATE_COMMAND: yarn
+    with:
+      args: upgrade --latest
+  ```
 
 * Use npm update
 
-```
-- name: package-update
-  uses: taichi/actions-package-update@master
-  env:
-    AUTHOR_EMAIL: john@example.com
-    AUTHOR_NAME: John
-    EXECUTE: "true"
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    UPDATE_COMMAND: npm
-  with:
-    args: update
-```
+  ```yaml
+  - name: package-update
+    uses: taichi/actions-package-update@master
+    env:
+      AUTHOR_EMAIL: john@example.com
+      AUTHOR_NAME: John
+      EXECUTE: "true"
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      UPDATE_COMMAND: npm
+    with:
+      args: update
+  ```
+
+* Use ncu with yarn workspaces
+
+  In your workspace root run:
+
+  ```sh
+  yarn add -DW wsrun npm-check-updates
+  ```
+
+  Add this script to your root package.json:
+
+  ```json
+  {
+    "ncu-all": "ncu -u --packageFile package.json && wsrun --serial ncu -u --packageFile package.json"
+  }
+  ```
+
+  Add this config:
+
+  ```yaml
+  - name: package-update
+    uses: taichi/actions-package-update@master
+    env:
+      AUTHOR_EMAIL: john@example.com
+      AUTHOR_NAME: John
+      EXECUTE: "true"
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      UPDATE_COMMAND: yarn
+    with:
+      args: ncu-all
+  ```
 
 ## Local or CI Server|Service
 
