@@ -188,7 +188,10 @@ export default class Processor {
       auth: `token ${config.get("token")}`,
       userAgent: `${packageJson.name}/${packageJson.version}`,
       // for GHE
-      baseUrl: repo.resource !== "github.com" ? `https://${repo.resource}/api/v3` : undefined
+      baseUrl:
+        repo.resource !== "github.com"
+          ? `https://${repo.resource}/api/v3`
+          : undefined
     });
   }
 
