@@ -1,6 +1,6 @@
 {
   "name": "actions-package-update",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "GitHub Action for package.json update.",
   "keywords": [
     "github-actions",
