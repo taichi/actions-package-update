@@ -75,9 +75,10 @@ export default class Processor {
             ...(await Promise.all(
               Object.entries(packageDiffs).map(
                 async (
-                  [directoryName, packageDiff]: ObjectEntry<
-                    PackageDiffByDirectory
-                  >,
+                  [
+                    directoryName,
+                    packageDiff
+                  ]: ObjectEntry<PackageDiffByDirectory>,
                   index: number
                 ) =>
                   `${index === 0 ? "" : directoryName}\n${toTextTable(
@@ -183,15 +184,12 @@ export default class Processor {
   }
 
   protected async newGitHub(config: Config, repo: giturl.GitUrl) {
-    const ghopt: Octokit.Options = {
+    return new Octokit({
       auth: `token ${config.get("token")}`,
-      userAgent: `${packageJson.name}/${packageJson.version}`
-    };
-    if (repo.resource !== "github.com") {
+      userAgent: `${packageJson.name}/${packageJson.version}`,
       // for GHE
-      ghopt.baseUrl = `https://${repo.resource}/api/v3`;
-    }
-    return new Octokit(ghopt);
+      baseUrl: repo.resource !== "github.com" ? `https://${repo.resource}/api/v3` : undefined
+    });
   }
 
   protected async pullRequest(
@@ -234,7 +232,7 @@ export default class Processor {
       owner: origin.owner,
       repo: origin.name
     });
-    const pr: Octokit.PullsCreateParams = {
+    const pr = {
       owner: origin.owner,
       repo: origin.name,
       base: repo.data.default_branch,
