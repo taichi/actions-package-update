@@ -75,9 +75,10 @@ export default class Processor {
             ...(await Promise.all(
               Object.entries(packageDiffs).map(
                 async (
-                  [directoryName, packageDiff]: ObjectEntry<
-                    PackageDiffByDirectory
-                  >,
+                  [
+                    directoryName,
+                    packageDiff
+                  ]: ObjectEntry<PackageDiffByDirectory>,
                   index: number
                 ) =>
                   `${index === 0 ? "" : directoryName}\n${toTextTable(
