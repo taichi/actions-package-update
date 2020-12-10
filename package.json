@@ -80,7 +80,9 @@
     "minimist": "^1.2.5",
     "acorn": "7.1.1",
     "kind-of": "6.0.3",
-    "serialize-to-js": "3.0.1"
+    "serialize-to-js": "3.0.1",
+    "node-forge": "0.10.0",
+    "elliptic": "6.5.3"
   },
   "engines": {
     "node": ">=10"
