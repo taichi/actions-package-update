@@ -138,7 +138,7 @@ or
   * `GITHUB_TOKEN`
     * GitHub personal access token is required for sending pull requests to your repository
     * [Creating an access token for command-line use](https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line)
-  * `AUTHOR_NAME` and `AUTHOR_EMAIL` 
+  * `AUTHOR_NAME` and `AUTHOR_EMAIL`
     * this command use there variables for commit
   * `EXECUTE`
     * By default, actions-package-update runs in dry-run mode.
@@ -176,6 +176,9 @@ this command works locally and output result to standard output.
 * `WORKING_DIR`
   * specify the working dir.
   * default value is `./`.
+* `SET_NODE_VERSION`
+  * specify the node version you want to run on.
+  * default value is `latest`.
 
 # for developers
 ## setup
@@ -187,7 +190,7 @@ execute below commands on project root dir.
 ## release
 
 * release package to npmjs
-  
+
     yarn publish
 
 * edit Dockerfile

@@ -4,3 +4,9 @@
 # include required files with an exception
 !LICENSE
 !README.md
+
+# we need these files for node version control or build arguments
+!entrypoint.sh
+!docker
+!package.json
+!yarn.lock
