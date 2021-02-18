@@ -16,4 +16,5 @@ chmod +x /this_env.sh
 
 cd /actions-package-update
 
-actions-package-update
+# ${INPUT_ARGS} are needed by ncu
+actions-package-update ${INPUT_ARGS}

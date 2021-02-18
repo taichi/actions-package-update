@@ -10,3 +10,10 @@
 !docker
 !package.json
 !yarn.lock
+!tsconfig.json
+!tslint.json
+!src
+!test
+!types
+!.gitignore
+!.gitattributes
