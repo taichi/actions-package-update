@@ -15,3 +15,5 @@
 !src
 !test
 !types
+!.gitignore
+!.gitattributes
