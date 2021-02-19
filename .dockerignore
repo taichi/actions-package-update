@@ -8,12 +8,3 @@
 # we need these files for node version control or build arguments
 !entrypoint.sh
 !docker
-!package.json
-!yarn.lock
-!tsconfig.json
-!tslint.json
-!src
-!test
-!types
-!.gitignore
-!.gitattributes

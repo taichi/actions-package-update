@@ -16,5 +16,9 @@ chmod +x /this_env.sh
 
 cd /actions-package-update
 
+# reset repo to original state after checkout to prevent committing unwanted files
+git reset --hard
+git clean -fdx
+
 # ${INPUT_ARGS} are needed by ncu
 actions-package-update ${INPUT_ARGS}
