@@ -146,7 +146,9 @@ or
 
     npm install actions-package-update -g
 
+or
 
+    pnpm add --global actions-package-update
 ### Setting Environment Variables
 
 * Required Variables
