@@ -17,25 +17,25 @@ below is the complete workflow example.
 ```yaml
 on:
   schedule:
-    - cron: 0 0 * * 3
+  - cron: 0 0 * * 3
 name: Update
 jobs:
   package-update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - name: set remote url
-        run: git remote set-url --push origin https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
-      - name: package-update
-        uses: taichi/actions-package-update@master
-        env:
-          AUTHOR_EMAIL: john@example.com
-          AUTHOR_NAME: john
-          EXECUTE: "true"
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LOG_LEVEL: debug
-        with:
-          args: -u --packageFile package.json --loglevel verbose
+    - uses: actions/checkout@master
+    - name: set remote url
+      run: git remote set-url --push origin https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+    - name: package-update
+      uses: taichi/actions-package-update@master
+      env:
+        AUTHOR_EMAIL: john@example.com
+        AUTHOR_NAME: john
+        EXECUTE: "true"
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        LOG_LEVEL: debug
+      with:
+        args: -u --packageFile package.json --loglevel verbose
 ```
 
 - this workflow works every wednesday at 0:00
