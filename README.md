@@ -90,6 +90,21 @@ jobs:
       args: update
   ```
 
+* Use pnpm update
+
+   ```yaml
+   - name: package-update
+     uses: taichi/actions-package-update@master
+     env:
+       AUTHOR_EMAIL: john@example.com
+       AUTHOR_NAME: John
+       EXECUTE: "true"
+       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+       UPDATE_COMMAND: pnpm
+     with:
+       args: update
+   ```
+
 * Use ncu with yarn workspaces
 
   In your workspace root run:
@@ -131,6 +146,9 @@ or
 
     npm install actions-package-update -g
 
+or
+
+    pnpm add --global actions-package-update
 
 ### Setting Environment Variables
 
