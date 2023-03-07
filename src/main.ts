@@ -238,7 +238,7 @@ export default class Processor {
     const pr = {
       owner: origin.owner,
       repo: origin.name,
-      base: repo.data.default_branch,
+      base: this.config.get("basebranch") || repo.data.default_branch,
       head: newBranch,
       title: this.config.get("title"),
       body: `${body}\n\nPowered by [${packageJson.name}](${packageJson.homepage})`

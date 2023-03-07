@@ -56,6 +56,12 @@ const rawConfig = convict({
       doc:
         "a space separated list of file that will be added to the commit. Leave empty to add all changes.",
       env: "COMMIT_FILES"
+    },
+    basebranch: {
+      default: "",
+      doc:
+        "base branch for creating pull requests. default is the default branch.",
+      env: "BASE_BRANCH"
     }
   },
   title: {
