@@ -258,6 +258,13 @@ export default class Processor {
       return;
     }
 
+    const pl = await this.getFile("pnpm-lock.yaml");
+    if (pl) {
+      this.config.logger.debug("use pnpm");
+      await this.runInWorkingDir("pnpm", "install");
+      return;
+    }
+
     this.config.logger.debug("use npm");
     await this.runInWorkingDir("npm", "install");
 
