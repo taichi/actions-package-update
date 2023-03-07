@@ -4,27 +4,31 @@ This tool keeps npm dependencies up-to-date by making pull requests from GitHub 
 
 ![actions-package-update](docs/actions-package-update.png)
 
-This tool successor of [taichi/ci-yarn-upgrade](https://github.com/taichi/ci-yarn-upgrade).
+This tool is the successor of [taichi/ci-yarn-upgrade](https://github.com/taichi/ci-yarn-upgrade).
 
 # Basic Usage
 GitHub Action for package.json update.
 
 ## GitHub Actions
 
-below is the complete workflow example.
+Below is the complete workflow example:
 
 ```yaml
+name: Update
+
 on:
   schedule:
   - cron: 0 0 * * 3
-name: Update
+  
 jobs:
   package-update:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    
     - name: set remote url
       run: git remote set-url --push origin https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+      
     - name: package-update
       uses: taichi/actions-package-update@master
       env:
@@ -37,16 +41,18 @@ jobs:
         args: -u --packageFile package.json --loglevel verbose
 ```
 
-* this workflow works every wednesday at 0:00
-* all `args` are pass to [npm-check-updates](https://github.com/tjunnone/npm-check-updates)
-* `AUTHOR_NAME` and `AUTHOR_EMAIL` is use for commit.
-* if you define `EXECUTE` is true, then actions-package-update makes a Pull Request.
-* you must grant acess to `GITHUB_TOKEN`, because actions-package-update access to your repository and make Pull Request.
-  * see. https://developer.github.com/actions/managing-workflows/storing-secrets/
+Notes:
+
+* this workflow runs every Wednesday at midnight.
+* all `args` are passed to [npm-check-updates](https://github.com/tjunnone/npm-check-updates).
+* `AUTHOR_NAME` and `AUTHOR_EMAIL` are use for the commit.
+* if you set `EXECUTE` as `true,` then actions-package-update makes a Pull Request.
+* you must grant access using the built-in `GITHUB_TOKEN` value as above, because actions-package-update access to your repository and make Pull Request.
+  * see [Storing Secrets](https://developer.github.com/actions/managing-workflows/storing-secrets/) in the docs.
 
 ### Examples
 
-* Update devDependencies only
+* Update `devDependencies` only
 
   ```yaml
   - name: package-update
@@ -92,7 +98,7 @@ jobs:
 
 * Use ncu with yarn workspaces
 
-  In your workspace root run:
+  In your workspace root, run:
 
   ```sh
   yarn add -DW wsrun npm-check-updates
@@ -146,7 +152,7 @@ or
 
 ### Command Behavior
 
-this command works locally and output result to standard output.
+This command works locally and output result to standard output.
 
 ![CLI Output](docs/clioutput.png)
 
@@ -157,7 +163,7 @@ this command works locally and output result to standard output.
 * `COMMIT_MESSAGE`
   * specify the commit message. default message is `update dependencies`.
 * `COMMIT_FILES`
-  * a space separated list of files that will be added to the commit. Leave empty to use git add --all.",
+  * a space separated list of files that will be added to the commit. Leave empty to use `git add --all`.
     * for example, you can use `"package.json package-lock.json"` to ensure only these two files gets added to the commit
 * `UPDATE_COMMAND`
   * specify the command for update. default command is `ncu`.
@@ -168,7 +174,7 @@ this command works locally and output result to standard output.
 * `KEEP`
   * if you specify this option, keep working branch after all.
   * default value is `false`.
-  * this is usefull for debug.
+  * this is useful for debugging.
 * `LOG_LEVEL`
   * One of `fatal`, `error`, `warn`, `info`, `debug`, `trace` or `silent`.
   * default value is `info`.
@@ -180,14 +186,16 @@ this command works locally and output result to standard output.
   * specify the node version you want to run on.
   * default value is `latest`.
 
-# for developers
-## setup
-execute below commands on project root dir.
+# Development
+
+## Setup
+
+Run these commands in the project root dir.
 
     yarn install
     code .
 
-## release
+## Release
 
 * release package to npmjs
 
