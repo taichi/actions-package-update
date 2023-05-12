@@ -185,7 +185,7 @@ export default class Processor {
 
   protected async newGitHub(config: Config, repo: giturl.GitUrl) {
     return new Octokit({
-      auth: `token ${config.get("token")}`,
+      auth: config.get("token"),
       userAgent: `${packageJson.name}/${packageJson.version}`,
       // for GHE
       baseUrl:
